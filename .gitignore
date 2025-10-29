@@ -1,0 +1,14 @@
+# Ignorar archivos de caché
+cache/
+
+# Ignorar datos GADM
+Datos/gadm41_ESP_shp/
+
+# Ignorar archivos de datos grandes
+*.csv
+*.json
+*.gpkg
+
+# Ignorar otros archivos temporales
+*.log
+.DS_Store
