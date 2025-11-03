@@ -13,11 +13,11 @@ from shapely.geometry import Point
 def graph_generator():
 
     print("Descargando red vial de Madrid desde OpenStreetMap...")
-    G_osm = ox.graph_from_place("Chamberí, Spain", network_type='drive', simplify=True)
+    G_osm = ox.graph_from_place("Chamberí, Madrid", network_type='drive', simplify=True)
     print(f"Grafo base cargado con {len(G_osm)} nodos y {len(G_osm.edges)} aristas.")
     
     # leer estaciones
-    df_stations = pd.read_csv("./Datos/NR_stations_Madrid.csv")          
+    df_stations = pd.read_csv("./Datos/NR_stations_chamberí.csv")          
     for i, row in enumerate(df_stations.itertuples(), start=1):
         # asumimos que CSV tiene columnas 'lat', 'lon' y 'range' (ajusta si se llaman distinto)
         # G_osm.add_node(f"A_{i}", pos=(row.lat, row.lon), type="antenna", range=row.range)
@@ -150,16 +150,6 @@ def update_topology(G):
 
 def visualize_graph(G):
     
-    gdf_esp = gpd.read_file("./Datos/gadm41_ESP_shp/gadm41_ESP_4.shp") # Descargar de la web oficial de GADM
-    gdf_madrid_poly = gdf_esp[
-    (gdf_esp["NAME_1"] == "Comunidad de Madrid") & 
-    (gdf_esp["NAME_4"] == "Madrid")]
-    
-    # Compatibilidad con OSMnx 
-    if gdf_madrid_poly.crs is None:
-        gdf_madrid_poly.set_crs(epsg=4326, inplace=True)
-    else:
-        gdf_madrid_poly = gdf_madrid_poly.to_crs(epsg=4326)
 
     pos = {}
     for n in G.nodes:
@@ -182,12 +172,12 @@ def visualize_graph(G):
             node_sizes.append(100)
         else:
             # Nodos de OSM (sin "type")
-            node_colors.append("gray")
-            node_sizes.append(0)
+            node_colors.append("black")
+            node_sizes.append(10)
 
     # Dibujar el grafo base de Madrid
-    base_graph = ox.graph_from_place("Madrid, Spain", network_type="drive")
-    fig, ax = ox.plot_graph(base_graph, show=False, close=False, bgcolor="white")
+    # base_graph = ox.graph_from_place("Chamberí, Madrid", network_type="drive")
+    fig, ax = ox.plot_graph(G, show=False, close=False, bgcolor="white")
 
     # Dibujar tu grafo personalizado encima
     nx.draw(
@@ -201,14 +191,9 @@ def visualize_graph(G):
         font_color="black"
     )
 
-    plt.title("Red OSMnx (Madrid) + Nodos personalizados", fontsize=12)
-    plt.show()
-    nx.draw( G, pos, with_labels=True, labels={n: n for n in G.nodes if "type" in G.nodes[n]}, node_color=node_colors, node_size=node_sizes, edge_color="orange", font_size=8, font_color="black" )
-    # nx.draw( G, pos, with_labels=True, labels={n: n for n in G.nodes if "type" in G.nodes[n]}, node_color=node_colors, node_size=node_sizes, edge_color="orange", font_size=8, font_color="black" )
-    # nx.draw(G, pos, with_labels=True, node_color=node_colors, edge_color="orange", node_size=800)       
-    gdf_madrid_poly.plot(facecolor="none", edgecolor="black", linewidth=1.0, zorder=3)
-    # ax.set_title("Red OSMnx (Madrid) con estaciones (antenas)", fontsize=14)
-    # plt.show()
+    plt.title("Red OSMnx (Distrtio) + Estaciones", fontsize=12)
+    plt.show()      
+
     return G
 
 
