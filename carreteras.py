@@ -16,30 +16,14 @@ def graph_generator():
     G_osm = ox.graph_from_place("Chamberí, Madrid", network_type='drive', simplify=True)
     print(f"Grafo base cargado con {len(G_osm)} nodos y {len(G_osm.edges)} aristas.")
     
-    # leer estaciones
+    # Leer estaciones
     df_stations = pd.read_csv("./Datos/NR_stations_chamberí.csv")          
     for i, row in enumerate(df_stations.itertuples(), start=1):
-        # asumimos que CSV tiene columnas 'lat', 'lon' y 'range' (ajusta si se llaman distinto)
-        # G_osm.add_node(f"A_{i}", pos=(row.lat, row.lon), type="antenna", range=row.range)
+        # Todo esta formateado a (lon,lat) para usar OSMNx siendo x=lon, y=lat
         G_osm.add_node(f"A_{i}", x=row.lon, y=row.lat, type="antenna", range=row.range)
     
     print(f"Grafo base cargado con {len(G_osm)} nodos y {len(G_osm.edges)} aristas.")
     return G_osm
-
-
-
-def distance_meters(coord1, coord2):
-    
-    
-    R = 6371000
-    lat1, lon1 = coord1
-    lat2, lon2 = coord2
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlambda = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c
 
 
 def find_nearest_antenna_node(G, lat, lon):
@@ -66,14 +50,37 @@ def find_nearest_static_antenna_node(G, lat, lon):
     
     return nearest_node, min_dist
 
+def check_route(G, id_vehicle, lat, lon):
+    
+    print(f"Ruta de {id_vehicle}:")
+    start_lat, start_lon = G.nodes[id_vehicle]["y"],G.nodes[id_vehicle]["x"]
+    node_start, dist_start = find_nearest_antenna_node(G, start_lat, start_lon)
 
+    if G.nodes[node_start]["range"] < dist_start:
+        dist_eff = dist_start - G.nodes[node_start]["range"]
+        G, last_node = agile_deployment(G, node_start, start_lat, start_lon, dist_eff)
+        G.add_edge(last_node, id_vehicle)
+
+    node_end, dist_end = find_nearest_antenna_node(G, lat, lon)
+    if G.nodes[node_end]["range"] < dist_end:
+        dist_eff = dist_end - G.nodes[node_end]["range"]
+        G, last_node = agile_deployment(G, node_end, lat, lon, dist_eff)
+        G.remove_node(id_vehicle)
+        G.add_node(id_vehicle,y=lat,x=lon,type="vehicle")
+        G.add_edge(last_node, id_vehicle)
+    else:
+        G.remove_node(id_vehicle)
+        G.add_node(id_vehicle, y=lat, x=lon, type="vehicle")
+        G.add_edge(node_end, id_vehicle)
+    return G
 
 def agile_deployment(G, node_start, lat, lon, dist):
-    dron_range = 500
+    
+    dron_range = 50 # Para hacer la prueba en un distrito ponemos un area de cobertura baja para así poder ver como se produce un despliegue de varios drones
     n_drones = int(dist // dron_range)
     print(f"Desplegando {n_drones} drones para cubrir {dist:.1f} m.")
 
-    start_lat, start_lon = G.nodes[node_start]["pos"]
+    start_lat, start_lon = G.nodes[node_start]["y"], G.nodes[node_start]["x"]
     start_point = Point(start_lat, start_lon)
     end_point = Point(lat, lon)
 
@@ -89,34 +96,11 @@ def agile_deployment(G, node_start, lat, lon, dist):
         new_point = distance(meters=offset).destination(start_point, bearing)
         new_lat, new_lon = new_point.latitude, new_point.longitude
         new_id = f"D_T_{len([n for n in G.nodes if G.nodes[n].get('type') == 'dron']) + 1}"
-        G.add_node(new_id, pos=(new_lat, new_lon), type="dron", range=dron_range)
+        G.add_node(new_id, x=new_lon, y=new_lat, type="dron", range=dron_range)
         G.add_edge(last_node, new_id)
         last_node = new_id
         print(f"  - Dron {new_id} desplegado en ({new_lat:.6f}, {new_lon:.6f})")
     return G, last_node
-
-
-def check_route(G, id_vehicle, lat, lon):
-    print(f"Ruta de {id_vehicle}:")
-    start_lat, start_lon = G.nodes[id_vehicle]["pos"]
-    node_start, dist_start = find_nearest_antenna_node(G, start_lat, start_lon)
-
-    if G.nodes[node_start]["range"] < dist_start:
-        dist_eff = dist_start - G.nodes[node_start]["range"]
-        G, last_node = agile_deployment(G, node_start, start_lat, start_lon, dist_eff)
-        G.add_edge(last_node, id_vehicle)
-
-    node_end, dist_end = find_nearest_antenna_node(G, lat, lon)
-    if G.nodes[node_end]["range"] < dist_end:
-        dist_eff = dist_end - G.nodes[node_end]["range"]
-        G, last_node = agile_deployment(G, node_end, lat, lon, dist_eff)
-        G.nodes[id_vehicle]["pos"] = (lat, lon)
-        G.add_edge(last_node, id_vehicle)
-    else:
-        G.nodes[id_vehicle]["pos"] = (lat, lon)
-        G.add_edge(node_end, id_vehicle)
-    return G
-
 
 
 def static_deployment(G, lat, lon, type, range):
@@ -126,7 +110,7 @@ def static_deployment(G, lat, lon, type, range):
         id_ = f"D_S_{len([n for n in G.nodes if G.nodes[n].get('type') == 'dron']) + 1}"
     else:
         id_ = f"V_{len([n for n in G.nodes if G.nodes[n].get('type') == 'vehicle']) + 1}"
-    G.add_node(id_, pos=(lat, lon), type=type, range=range)
+    G.add_node(id_, x=lon, y=lat, type=type, range=range)
     print(f"Nuevo nodo {id_} ({type}) añadido.")
     return G
 
@@ -241,31 +225,43 @@ if __name__ == "__main__":
                 G = static_deployment(G, lat, lon, type, r)
 
             elif choice == "3":
-                print(list(G.nodes))
+                print(G.nodes)
                 node_id = get_input_or_exit("ID a eliminar: ")
                 G = remove_node(G, node_id)
 
             elif choice == "4":
-                print(list(G.nodes))
+                print(G.nodes)
                 n1 = get_input_or_exit("Nodo 1: ")
                 n2 = get_input_or_exit("Nodo 2: ")
                 if n1 in G and n2 in G:
-                    coord1, coord2 = G.nodes[n1]["pos"], G.nodes[n2]["pos"]
-                    print(f"Distancia: {distance_meters(coord1, coord2):.2f} m")
+                    
+                    # Calcular la longitud total de la ruta
+                    route = nx.shortest_path(G, n1, n2, weight='length')
+                    route_length = sum(ox.utils_graph.get_route_edge_attributes(G, route, 'length'))
+                    print(f"Distancia por carretera: {route_length:.2f} m")
                 else:
                     print("Nodo no encontrado.")
 
             elif choice == "5":
-                id_vehicle = get_input_or_exit("ID del vehículo: ")
-                lat = get_input_or_exit("Latitud destino: ", float)
-                lon = get_input_or_exit("Longitud destino: ", float)
-                G = check_route(G, id_vehicle, lat, lon)
-                visualize_graph(G)
+                
+                if(not ([n for n in G.nodes if G.nodes[n].get("type")=="vehicle"])):
+                    
+                    print("No hay vehículos")
+                    break
+                else:
+                    print([n for n in G.nodes if G.nodes[n].get("type")=="vehicle"])
+                    id_vehicle = get_input_or_exit("ID del vehículo: ")
+                    lat = get_input_or_exit("Latitud destino: ", float)
+                    lon = get_input_or_exit("Longitud destino: ", float)
+                    G = check_route(G, id_vehicle, lat, lon)
+                    visualize_graph(G)
 
             elif choice == "6":
                 G = update_topology(G)
+                print("La topología se ha actualizado")
 
             elif choice == "7":
+                print(G.nodes)
                 node_id = get_input_or_exit("Nodo: ")
                 print(G.nodes[node_id] if node_id in G else "No existe.")
 
