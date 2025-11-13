@@ -1,0 +1,374 @@
+version 3
+run General-0-20251113-12:08:44-237921
+attr configname General
+attr datetime 20251113-12:08:44
+attr datetimef 20251113-120844
+attr experiment General
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network socketreal.simulations.SocketRealNetwork
+attr processid 237921
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../inet4.5/images:../../../veins-veins-5.3.1/images:../../../veins-veins-5.3.1/subprojects/veins_inet/images
+config network socketreal.simulations.SocketRealNetwork
+config sim-time-limit 1000s
+config *.server.numApps 1
+config *.server.app[0].typename TcpServer
+config *.server.app[0].serverThreadModuleType "\"\""
+config *.server.hasTcp false
+config **.verbose true
+
+par SocketRealNetwork.configurator typename "\"inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator\""
+par SocketRealNetwork.configurator minLinkWeight 0.001
+par SocketRealNetwork.configurator configureIsolatedNetworksSeparatly false
+par SocketRealNetwork.configurator config "<config>...</config> at content:1"
+par SocketRealNetwork.configurator assignAddresses true
+par SocketRealNetwork.configurator assignUniqueAddresses true
+par SocketRealNetwork.configurator assignDisjunctSubnetAddresses true
+par SocketRealNetwork.configurator addStaticRoutes true
+par SocketRealNetwork.configurator addDefaultRoutes true
+par SocketRealNetwork.configurator addSubnetRoutes true
+par SocketRealNetwork.configurator addDirectRoutes true
+par SocketRealNetwork.configurator optimizeRoutes true
+par SocketRealNetwork.configurator dumpTopology false
+par SocketRealNetwork.configurator dumpLinks false
+par SocketRealNetwork.configurator dumpAddresses false
+par SocketRealNetwork.configurator dumpRoutes false
+par SocketRealNetwork.configurator dumpConfig "\"\""
+par SocketRealNetwork.server.interfaceTable typename "\"inet.networklayer.common.InterfaceTable\""
+par SocketRealNetwork.server.interfaceTable displayAddresses false
+par SocketRealNetwork.server.cb typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.cb displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.cb forwardServiceRegistration true
+par SocketRealNetwork.server.cb forwardProtocolRegistration true
+par SocketRealNetwork.server.bl typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.bl displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.bl forwardServiceRegistration true
+par SocketRealNetwork.server.bl forwardProtocolRegistration true
+par SocketRealNetwork.server.li typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.li displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.li forwardServiceRegistration true
+par SocketRealNetwork.server.li forwardProtocolRegistration true
+par SocketRealNetwork.server.lo[0].upperLayerIn.channel typename "\"ned.IdealChannel\""
+par SocketRealNetwork.server.lo[0].lo.upperLayerOut.channel typename "\"ned.IdealChannel\""
+par SocketRealNetwork.server.lo[0].lo typename "\"inet.linklayer.loopback.Loopback\""
+par SocketRealNetwork.server.lo[0].lo interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.lo[0].lo mtu 4470B
+attr unit B
+scalar SocketRealNetwork.server.lo[0].lo rcvdPkFromHl:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetReceivedFromUpper
+attr title "packets received from higher layer, count"
+scalar SocketRealNetwork.server.lo[0].lo rcvdPkFromHl:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetReceivedFromUpper
+attr title "packets received from higher layer, sum(packetBytes)"
+scalar SocketRealNetwork.server.lo[0].lo passedUpPk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSentToUpper
+attr title "packets passed to higher layer, count"
+scalar SocketRealNetwork.server.lo[0].lo passedUpPk:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetSentToUpper
+attr title "packets passed to higher layer, sum(packetBytes)"
+par SocketRealNetwork.server.lo[0] typename "\"inet.linklayer.loopback.LoopbackInterface\""
+par SocketRealNetwork.server.lo[0] displayStringTextFormat "\"%a (%i)\\n%m\""
+par SocketRealNetwork.server.lo[0] recordPcap false
+par SocketRealNetwork.server.lo[0] numPcapRecorders 0
+par SocketRealNetwork.server.lo[0] interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+scalar SocketRealNetwork.server.lo[0] packetDropInterfaceDown:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, count"
+scalar SocketRealNetwork.server.lo[0] packetDropInterfaceDown:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, sum(packetBytes)"
+scalar SocketRealNetwork.server.lo[0] packetDropNoCarrier:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, count"
+scalar SocketRealNetwork.server.lo[0] packetDropNoCarrier:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, sum(packetBytes)"
+par SocketRealNetwork.server.ipv4.transportIn.channel typename "\"ned.IdealChannel\""
+par SocketRealNetwork.server.ipv4.up.out[0].channel typename "\"ned.IdealChannel\""
+par SocketRealNetwork.server.ipv4.lp.out[2].channel typename "\"ned.IdealChannel\""
+par SocketRealNetwork.server.ipv4.ifIn.channel typename "\"ned.IdealChannel\""
+par SocketRealNetwork.server.ipv4.configurator typename "\"inet.networklayer.configurator.ipv4.Ipv4NodeConfigurator\""
+par SocketRealNetwork.server.ipv4.configurator interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.ipv4.configurator routingTableModule "\"SocketRealNetwork.server.ipv4.routingTable\""
+par SocketRealNetwork.server.ipv4.configurator networkConfiguratorModule "\"configurator\""
+par SocketRealNetwork.server.ipv4.configurator configureRoutingTable true
+par SocketRealNetwork.server.ipv4.routingTable typename "\"inet.networklayer.ipv4.Ipv4RoutingTable\""
+par SocketRealNetwork.server.ipv4.routingTable interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.ipv4.routingTable routerId "\"auto\""
+par SocketRealNetwork.server.ipv4.routingTable netmaskRoutes "\"*\""
+par SocketRealNetwork.server.ipv4.routingTable forwarding false
+par SocketRealNetwork.server.ipv4.routingTable multicastForwarding false
+par SocketRealNetwork.server.ipv4.routingTable useAdminDist false
+par SocketRealNetwork.server.ipv4.routingTable routingFile "\"\""
+par SocketRealNetwork.server.ipv4.natTable typename "\"inet.networklayer.ipv4.Ipv4NatTable\""
+par SocketRealNetwork.server.ipv4.natTable networkProtocolModule "\"^.ip\""
+par SocketRealNetwork.server.ipv4.natTable config "<config/> at content:1"
+par SocketRealNetwork.server.ipv4.up typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.ipv4.up displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.ipv4.up forwardServiceRegistration true
+par SocketRealNetwork.server.ipv4.up forwardProtocolRegistration true
+par SocketRealNetwork.server.ipv4.igmp typename "\"inet.networklayer.ipv4.Igmpv2\""
+par SocketRealNetwork.server.ipv4.igmp interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.ipv4.igmp routingTableModule "\"SocketRealNetwork.server.ipv4.routingTable\""
+par SocketRealNetwork.server.ipv4.igmp crcMode "\"declared\""
+attr enum declared,computed
+par SocketRealNetwork.server.ipv4.igmp enabled true
+par SocketRealNetwork.server.ipv4.igmp robustnessVariable 2
+par SocketRealNetwork.server.ipv4.igmp queryInterval 125s
+attr unit s
+par SocketRealNetwork.server.ipv4.igmp queryResponseInterval 10s
+attr unit s
+par SocketRealNetwork.server.ipv4.igmp groupMembershipInterval 260s
+attr unit s
+par SocketRealNetwork.server.ipv4.igmp otherQuerierPresentInterval 255s
+attr unit s
+par SocketRealNetwork.server.ipv4.igmp startupQueryInterval 31.25s
+attr unit s
+par SocketRealNetwork.server.ipv4.igmp startupQueryCount 2
+par SocketRealNetwork.server.ipv4.igmp lastMemberQueryInterval 1s
+attr unit s
+par SocketRealNetwork.server.ipv4.igmp lastMemberQueryCount 2
+par SocketRealNetwork.server.ipv4.igmp unsolicitedReportInterval 10s
+attr unit s
+par SocketRealNetwork.server.ipv4.icmp typename "\"inet.networklayer.ipv4.Icmp\""
+par SocketRealNetwork.server.ipv4.icmp interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.ipv4.icmp routingTableModule "\"SocketRealNetwork.server.ipv4.routingTable\""
+par SocketRealNetwork.server.ipv4.icmp crcMode "\"declared\""
+attr enum declared,computed
+attr mutable ""
+par SocketRealNetwork.server.ipv4.icmp quoteLength 8B
+attr mutable ""
+attr unit B
+par SocketRealNetwork.server.ipv4.mp typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.ipv4.mp displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.ipv4.mp forwardServiceRegistration true
+par SocketRealNetwork.server.ipv4.mp forwardProtocolRegistration true
+par SocketRealNetwork.server.ipv4.ip typename "\"inet.networklayer.ipv4.Ipv4\""
+par SocketRealNetwork.server.ipv4.ip interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.ipv4.ip routingTableModule "\"SocketRealNetwork.server.ipv4.routingTable\""
+par SocketRealNetwork.server.ipv4.ip arpModule "\"SocketRealNetwork.server.ipv4.arp\""
+par SocketRealNetwork.server.ipv4.ip icmpModule "\"SocketRealNetwork.server.ipv4.icmp\""
+par SocketRealNetwork.server.ipv4.ip crcMode "\"declared\""
+attr enum declared,computed
+par SocketRealNetwork.server.ipv4.ip timeToLive 32
+par SocketRealNetwork.server.ipv4.ip multicastTimeToLive 32
+par SocketRealNetwork.server.ipv4.ip fragmentTimeout 60s
+attr unit s
+par SocketRealNetwork.server.ipv4.ip limitedBroadcast false
+par SocketRealNetwork.server.ipv4.ip directBroadcastInterfaces "\"\""
+scalar SocketRealNetwork.server.ipv4.ip packetDropAddressResolutionFailed:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsAddressResolutionFailed(packetDropped)
+attr title "packet drop: address resolution failed, count"
+scalar SocketRealNetwork.server.ipv4.ip packetDropAddressResolutionFailed:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsAddressResolutionFailed(packetDropped)
+attr title "packet drop: address resolution failed, sum(packetBytes)"
+scalar SocketRealNetwork.server.ipv4.ip packetDropHopLimitReached:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsHopLimitReached(packetDropped)
+attr title "packet drop: hop limit reached, count"
+scalar SocketRealNetwork.server.ipv4.ip packetDropHopLimitReached:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsHopLimitReached(packetDropped)
+attr title "packet drop: hop limit reached, sum(packetBytes)"
+scalar SocketRealNetwork.server.ipv4.ip packetDropForwardingDisabled:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsForwardingDisabled(packetDropped)
+attr title "packet drop: forwarding disabled, count"
+scalar SocketRealNetwork.server.ipv4.ip packetDropForwardingDisabled:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsForwardingDisabled(packetDropped)
+attr title "packet drop: forwarding disabled, sum(packetBytes)"
+scalar SocketRealNetwork.server.ipv4.ip packetDropNoInterfaceFound:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoInterfaceFound(packetDropped)
+attr title "packet drop: no interface found, count"
+scalar SocketRealNetwork.server.ipv4.ip packetDropNoInterfaceFound:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoInterfaceFound(packetDropped)
+attr title "packet drop: no interface found, sum(packetBytes)"
+scalar SocketRealNetwork.server.ipv4.ip packetDropNoRouteFound:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoRouteFound(packetDropped)
+attr title "packet drop: no route found, count"
+scalar SocketRealNetwork.server.ipv4.ip packetDropNoRouteFound:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoRouteFound(packetDropped)
+attr title "packet drop: no route found, sum(packetBytes)"
+scalar SocketRealNetwork.server.ipv4.ip packetDropUndefined:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsUndefined(packetDropped)
+attr title "packet drop: undefined, count"
+scalar SocketRealNetwork.server.ipv4.ip packetDropUndefined:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsUndefined(packetDropped)
+attr title "packet drop: undefined, sum(packetBytes)"
+par SocketRealNetwork.server.ipv4.arp typename "\"inet.networklayer.arp.ipv4.Arp\""
+par SocketRealNetwork.server.ipv4.arp interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.ipv4.arp routingTableModule "\"SocketRealNetwork.server.ipv4.routingTable\""
+par SocketRealNetwork.server.ipv4.arp retryTimeout 1s
+attr unit s
+par SocketRealNetwork.server.ipv4.arp retryCount 3
+par SocketRealNetwork.server.ipv4.arp cacheTimeout 120s
+attr unit s
+par SocketRealNetwork.server.ipv4.arp proxyArpInterfaces "\"\""
+scalar SocketRealNetwork.server.ipv4.arp arpResolutionFailed:count 0
+attr recordingmode count
+attr title "ARP failed resolutions, count"
+scalar SocketRealNetwork.server.ipv4.arp arpResolutionCompleted:count 0
+attr recordingmode count
+attr title "ARP completed resolutions, count"
+scalar SocketRealNetwork.server.ipv4.arp arpResolutionInitiated:count 0
+attr recordingmode count
+attr title "ARP initiated resolutions, count"
+scalar SocketRealNetwork.server.ipv4.arp arpReplySent:count 0
+attr recordingmode count
+attr source arpReplySent
+attr title "ARP replies sent, count"
+scalar SocketRealNetwork.server.ipv4.arp arpReplySent:sum(packetBytes) 0
+attr recordingmode sum(packetBytes)
+attr source arpReplySent
+attr title "ARP replies sent, sum(packetBytes)"
+scalar SocketRealNetwork.server.ipv4.arp arpRequestSent:count 0
+attr recordingmode count
+attr source arpRequestSent
+attr title "ARP request sent, count"
+scalar SocketRealNetwork.server.ipv4.arp arpRequestSent:sum(packetBytes) 0
+attr recordingmode sum(packetBytes)
+attr source arpRequestSent
+attr title "ARP request sent, sum(packetBytes)"
+par SocketRealNetwork.server.ipv4.lp typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.ipv4.lp displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.ipv4.lp forwardServiceRegistration true
+par SocketRealNetwork.server.ipv4.lp forwardProtocolRegistration true
+par SocketRealNetwork.server.ipv4 typename "\"inet.networklayer.ipv4.Ipv4NetworkLayer\""
+par SocketRealNetwork.server.ipv4 forwarding false
+par SocketRealNetwork.server.ipv4 multicastForwarding false
+par SocketRealNetwork.server.ipv4 interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.ipv4 displayStringTextFormat "\"%i\""
+par SocketRealNetwork.server.nl typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.nl displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.nl forwardServiceRegistration true
+par SocketRealNetwork.server.nl forwardProtocolRegistration true
+par SocketRealNetwork.server.udp typename "\"inet.transportlayer.udp.Udp\""
+par SocketRealNetwork.server.udp interfaceTableModule "\"SocketRealNetwork.server.interfaceTable\""
+par SocketRealNetwork.server.udp icmpModule "\"^.ipv4.icmp\""
+par SocketRealNetwork.server.udp icmpv6Module "\"^.ipv6.icmpv6\""
+par SocketRealNetwork.server.udp crcMode "\"declared\""
+attr enum disabled,declared,computed
+par SocketRealNetwork.server.udp defaultMulticastLoop true
+scalar SocketRealNetwork.server.udp packetReceived:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetReceived
+attr title "packets received, count"
+scalar SocketRealNetwork.server.udp packetReceived:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetReceived
+attr title "packets received, sum(packetBytes)"
+scalar SocketRealNetwork.server.udp packetSent:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSent
+attr title "packets sent, count"
+scalar SocketRealNetwork.server.udp packetSent:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetSent
+attr title "packets sent, sum(packetBytes)"
+scalar SocketRealNetwork.server.udp passedUpPk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSentToUpper
+attr title "packets passed up, count"
+scalar SocketRealNetwork.server.udp droppedPkWrongPort:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+scalar SocketRealNetwork.server.udp droppedPkBadChecksum:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+par SocketRealNetwork.server.tn typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.tn displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.tn forwardServiceRegistration true
+par SocketRealNetwork.server.tn forwardProtocolRegistration true
+par SocketRealNetwork.server.app[0] typename "\"socketreal.TcpServer\""
+par SocketRealNetwork.server.app[0] localAddress "\"\""
+par SocketRealNetwork.server.app[0] localPort 1000
+par SocketRealNetwork.server.app[0] serverThreadModuleType "\"\""
+par SocketRealNetwork.server.app[0] stopOperationExtraTime -1s
+attr unit s
+par SocketRealNetwork.server.app[0] stopOperationTimeout 2s
+attr unit s
+par SocketRealNetwork.server.at typename "\"inet.common.MessageDispatcher\""
+par SocketRealNetwork.server.at displayStringTextFormat "\"processed %p pk (%l)\""
+par SocketRealNetwork.server.at forwardServiceRegistration true
+par SocketRealNetwork.server.at forwardProtocolRegistration true
+par SocketRealNetwork.server typename "\"inet.node.inet.StandardHost\""
+par SocketRealNetwork.server hasStatus false
+par SocketRealNetwork.server osgModel "\"\""
+par SocketRealNetwork.server osgModelColor "\"\""
+par SocketRealNetwork.server canvasImage "\"\""
+par SocketRealNetwork.server canvasImageColor "\"\""
+par SocketRealNetwork.server recordPcap false
+par SocketRealNetwork.server numPcapRecorders 0
+par SocketRealNetwork.server numLoInterfaces 1
+par SocketRealNetwork.server numWlanInterfaces 0
+par SocketRealNetwork.server numEthInterfaces 0
+par SocketRealNetwork.server numPppInterfaces 0
+par SocketRealNetwork.server numTunInterfaces 0
+par SocketRealNetwork.server numVirtInterfaces 0
+par SocketRealNetwork.server fcsMode "\"declared\""
+attr enum declared,computed
+par SocketRealNetwork.server hasIpv4 true
+par SocketRealNetwork.server hasIpv6 false
+par SocketRealNetwork.server hasGn false
+par SocketRealNetwork.server forwarding false
+par SocketRealNetwork.server multicastForwarding false
+par SocketRealNetwork.server hasUdp true
+par SocketRealNetwork.server hasTcp false
+par SocketRealNetwork.server hasSctp false
+par SocketRealNetwork.server numApps 1
+par SocketRealNetwork typename "\"socketreal.simulations.SocketRealNetwork\""
+

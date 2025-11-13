@@ -11,7 +11,7 @@ def graph_generator():
 
     # Aquí iría parte de leer los csv y crear los nodos del grafo a partir de esos datos.
 
-    df_stations = pd.read_csv("./Datos/estaciones_lte_madrid.csv")  
+    df_stations = pd.read_csv("./Datos/LTE_stations_ Madrid.csv")  
     G = nx.Graph()
         
     

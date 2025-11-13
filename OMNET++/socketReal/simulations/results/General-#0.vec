@@ -1,0 +1,46 @@
+version 3
+run General-0-20251113-12:08:44-237921
+attr configname General
+attr datetime 20251113-12:08:44
+attr datetimef 20251113-120844
+attr experiment General
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network socketreal.simulations.SocketRealNetwork
+attr processid 237921
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../inet4.5/images:../../../veins-veins-5.3.1/images:../../../veins-veins-5.3.1/subprojects/veins_inet/images
+config network socketreal.simulations.SocketRealNetwork
+config sim-time-limit 1000s
+config *.server.numApps 1
+config *.server.app[0].typename TcpServer
+config *.server.app[0].serverThreadModuleType "\"\""
+config *.server.hasTcp false
+config **.verbose true
+
+vector 0 SocketRealNetwork.server.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 1 SocketRealNetwork.server.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 2 SocketRealNetwork.server.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+0	0	0	0
+1	0	0	0
+2	0	0	0
+

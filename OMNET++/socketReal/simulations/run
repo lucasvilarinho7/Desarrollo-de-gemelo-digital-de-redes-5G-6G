@@ -1,0 +1,4 @@
+#!/bin/sh
+cd `dirname $0`
+../src/socketreal -n .:../src $*
+# for shared lib, use: opp_run -l ../src/socketreal -n .:../src $*

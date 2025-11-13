@@ -14,7 +14,6 @@ def graph_generator():
 
     print("Descargando red vial de Madrid desde OpenStreetMap...")
     G_osm = ox.graph_from_place("Chamberí, Madrid", network_type='drive', simplify=True)
-    print(f"Grafo base cargado con {len(G_osm)} nodos y {len(G_osm.edges)} aristas.")
     
     # Leer estaciones
     df_stations = pd.read_csv("./Datos/NR_stations_chamberí.csv")          
@@ -23,6 +22,7 @@ def graph_generator():
         G_osm.add_node(f"A_{i}", x=row.lon, y=row.lat, type="antenna", range=row.range)
     
     print(f"Grafo base cargado con {len(G_osm)} nodos y {len(G_osm.edges)} aristas.")
+    
     return G_osm
 
 
@@ -72,6 +72,9 @@ def check_route(G, id_vehicle, lat, lon):
         G.remove_node(id_vehicle)
         G.add_node(id_vehicle, y=lat, x=lon, type="vehicle")
         G.add_edge(node_end, id_vehicle)
+        
+        
+    
     return G
 
 def agile_deployment(G, node_start, lat, lon, dist):
@@ -225,12 +228,12 @@ if __name__ == "__main__":
                 G = static_deployment(G, lat, lon, type, r)
 
             elif choice == "3":
-                print(G.nodes)
+                print([n for n in G.nodes if G.nodes[n].get("type") in ["vehicle", "antenna"]])
                 node_id = get_input_or_exit("ID a eliminar: ")
                 G = remove_node(G, node_id)
 
             elif choice == "4":
-                print(G.nodes)
+                print([n for n in G.nodes if G.nodes[n].get("type") in ["vehicle", "antenna", "dron"]])
                 n1 = get_input_or_exit("Nodo 1: ")
                 n2 = get_input_or_exit("Nodo 2: ")
                 if n1 in G and n2 in G:
@@ -261,7 +264,7 @@ if __name__ == "__main__":
                 print("La topología se ha actualizado")
 
             elif choice == "7":
-                print(G.nodes)
+                print([n for n in G.nodes if G.nodes[n].get("type") in ["vehicle", "antenna", "dron"]])
                 node_id = get_input_or_exit("Nodo: ")
                 print(G.nodes[node_id] if node_id in G else "No existe.")
 
