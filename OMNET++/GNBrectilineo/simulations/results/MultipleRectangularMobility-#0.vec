@@ -1,0 +1,330 @@
+version 3
+run MultipleRectangularMobility-0-20251118-13:50:35-404512
+attr configname MultipleRectangularMobility
+attr datetime 20251118-13:50:35
+attr datetimef 20251118-135035
+attr experiment MultipleRectangularMobility
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network gnbrectilineo.MobileGNB
+attr processid 404512
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../inet4.5/images:../../simu5g/images:../../../veins-veins-5.3.1/images:../../../veins-veins-5.3.1/subprojects/veins_inet/images
+config extends "Area, MobileNetwork, Update, Visualization"
+config *.numGnbs 3
+config *.gNodeB[*].mobility.typename RectangleMobility
+config *.gNodeB[*].mobility.initFromDisplayString false
+config *.gNodeB[*].mobility.speed 15mps
+config *.gNodeB[*].mobility.displayTrail true
+config *.gNodeB[0].mobility.constraintAreaMinX 100m
+config *.gNodeB[0].mobility.constraintAreaMinY 100m
+config *.gNodeB[0].mobility.constraintAreaMaxX 400m
+config *.gNodeB[0].mobility.constraintAreaMaxY 300m
+config *.gNodeB[0].mobility.startPos 0
+config *.gNodeB[0].coverageRange 250m
+config *.gNodeB[0].coverageColor "\"#ff0000\""
+config *.gNodeB[0].coverageOpacity 0.15
+config *.gNodeB[1].mobility.constraintAreaMinX 400m
+config *.gNodeB[1].mobility.constraintAreaMinY 250m
+config *.gNodeB[1].mobility.constraintAreaMaxX 800m
+config *.gNodeB[1].mobility.constraintAreaMaxY 550m
+config *.gNodeB[1].mobility.startPos 2
+config *.gNodeB[1].coverageRange 280m
+config *.gNodeB[1].coverageColor "\"#00ff00\""
+config *.gNodeB[1].coverageOpacity 0.15
+config *.gNodeB[2].mobility.constraintAreaMinX 800m
+config *.gNodeB[2].mobility.constraintAreaMinY 500m
+config *.gNodeB[2].mobility.constraintAreaMaxX 1100m
+config *.gNodeB[2].mobility.constraintAreaMaxY 700m
+config *.gNodeB[2].mobility.startPos 3
+config *.gNodeB[2].coverageRange 300m
+config *.gNodeB[2].coverageColor "\"#0000ff\""
+config *.gNodeB[2].coverageOpacity 0.15
+config **.constraintAreaMinX 0m
+config **.constraintAreaMinY 0m
+config **.constraintAreaMinZ 0m
+config **.constraintAreaMaxX 1200m
+config **.constraintAreaMaxY 800m
+config **.constraintAreaMaxZ 0m
+config network gnbrectilineo.MobileGNB
+config **.mobility.updateInterval 0.1s
+config *.visualizer.*.mobilityVisualizer.displayMovements true
+config *.visualizer.*.mobilityVisualizer.displayVelocities true
+config *.visualizer.*.mobilityVisualizer.displayOrientations true
+config *.visualizer.*.mobilityVisualizer.moduleFilter "\"*.gNodeB[*]\""
+config *.visualizer.*.mobilityVisualizer.trail.visible true
+config *.visualizer.*.mobilityVisualizer.trail.lineWidth 2
+config sim-time-limit 1000s
+
+vector 0 MobileGNB.gNodeB[0].pppIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 1 MobileGNB.gNodeB[0].pppIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 2 MobileGNB.gNodeB[0].pppIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 3 MobileGNB.gNodeB[0].pppMEHostIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 4 MobileGNB.gNodeB[0].pppMEHostIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 5 MobileGNB.gNodeB[0].pppMEHostIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 6 MobileGNB.gNodeB[0].udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 7 MobileGNB.gNodeB[0].udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 8 MobileGNB.gNodeB[0].udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 9 MobileGNB.gNodeB[1].pppIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 10 MobileGNB.gNodeB[1].pppIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 11 MobileGNB.gNodeB[1].pppIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 12 MobileGNB.gNodeB[1].pppMEHostIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 13 MobileGNB.gNodeB[1].pppMEHostIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 14 MobileGNB.gNodeB[1].pppMEHostIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 15 MobileGNB.gNodeB[1].udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 16 MobileGNB.gNodeB[1].udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 17 MobileGNB.gNodeB[1].udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 18 MobileGNB.gNodeB[2].pppIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 19 MobileGNB.gNodeB[2].pppIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 20 MobileGNB.gNodeB[2].pppIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 21 MobileGNB.gNodeB[2].pppMEHostIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 22 MobileGNB.gNodeB[2].pppMEHostIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 23 MobileGNB.gNodeB[2].pppMEHostIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 24 MobileGNB.gNodeB[2].udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 25 MobileGNB.gNodeB[2].udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 26 MobileGNB.gNodeB[2].udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 27 MobileGNB.gNodeB[0] posX:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source xCoord(mobilityPos(mobilityStateChanged))
+vector 28 MobileGNB.gNodeB[0] posY:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source yCoord(mobilityPos(mobilityStateChanged))
+vector 29 MobileGNB.gNodeB[1] posX:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source xCoord(mobilityPos(mobilityStateChanged))
+vector 30 MobileGNB.gNodeB[1] posY:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source yCoord(mobilityPos(mobilityStateChanged))
+vector 31 MobileGNB.gNodeB[2] posX:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source xCoord(mobilityPos(mobilityStateChanged))
+vector 32 MobileGNB.gNodeB[2] posY:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source yCoord(mobilityPos(mobilityStateChanged))
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+1	0	0	0
+1	0	0	0
+1	0	0	0
+1	0	0	0
+1	0	0	0
+2	0	0	0
+3	0	0	0
+3	0	0	0
+3	0	0	0
+3	0	0	0
+3	0	0	0
+4	0	0	0
+4	0	0	0
+4	0	0	0
+4	0	0	0
+4	0	0	0
+5	0	0	0
+6	0	0	0
+7	0	0	0
+8	0	0	0
+9	0	0	0
+9	0	0	0
+9	0	0	0
+9	0	0	0
+9	0	0	0
+10	0	0	0
+10	0	0	0
+10	0	0	0
+10	0	0	0
+10	0	0	0
+11	0	0	0
+12	0	0	0
+12	0	0	0
+12	0	0	0
+12	0	0	0
+12	0	0	0
+13	0	0	0
+13	0	0	0
+13	0	0	0
+13	0	0	0
+13	0	0	0
+14	0	0	0
+15	0	0	0
+16	0	0	0
+17	0	0	0
+18	0	0	0
+18	0	0	0
+18	0	0	0
+18	0	0	0
+18	0	0	0
+19	0	0	0
+19	0	0	0
+19	0	0	0
+19	0	0	0
+19	0	0	0
+20	0	0	0
+21	0	0	0
+21	0	0	0
+21	0	0	0
+21	0	0	0
+21	0	0	0
+22	0	0	0
+22	0	0	0
+22	0	0	0
+22	0	0	0
+22	0	0	0
+23	0	0	0
+24	0	0	0
+25	0	0	0
+26	0	0	0
+27	0	0	100
+28	0	0	100
+29	0	0	800
+30	0	0	550
+31	0	0	800
+32	0	0	700
+

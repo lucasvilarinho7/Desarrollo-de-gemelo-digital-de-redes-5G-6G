@@ -1,0 +1,244 @@
+version 3
+run General-0-20251117-12:12:12-113052
+attr configname General
+attr datetime 20251117-12:12:12
+attr datetimef 20251117-121212
+attr experiment General
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network gnbrectilineo.MobileGNB
+attr processid 113052
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../inet4.5/images:../../simu5g/images:../../../veins-veins-5.3.1/images:../../../veins-veins-5.3.1/subprojects/veins_inet/images
+config sim-time-limit 1000s
+config network gnbrectilineo.MobileGNB
+config *.binder.numChannels 1
+config *.channelControl.pMax 10W
+config *.channelControl.alpha 1.0
+config *.channelControl.carrierFrequency 2GHz
+config **.constraintAreaMinX 0m
+config **.constraintAreaMinY 0m
+config **.constraintAreaMinZ 0m
+config **.constraintAreaMaxX 600m
+config **.constraintAreaMaxY 400m
+config **.constraintAreaMaxZ 0m
+config *.gNodeB.mobility.typename LinearMobility
+config *.gNodeB.mobility.initFromDisplayString false
+config *.gNodeB.mobility.updateInterval 0.1s
+config *.gNodeB.mobility.speed 20mps
+config *.gNodeB.mobility.initialMovementHeading 30deg
+config *.gNodeB.mobility.initialX 50m
+config *.gNodeB.mobility.initialY 200m
+config *.gNodeB.mobility.**.displayTrail true
+
+vector 0 MobileGNB.gNodeB.pppIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 1 MobileGNB.gNodeB.pppIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 2 MobileGNB.gNodeB.pppIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 3 MobileGNB.gNodeB.pppMEHostIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 4 MobileGNB.gNodeB.pppMEHostIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 5 MobileGNB.gNodeB.pppMEHostIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 6 MobileGNB.gNodeB.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 7 MobileGNB.gNodeB.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 8 MobileGNB.gNodeB.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 9 MobileGNB.gNodeB posX:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source xCoord(mobilityPos(mobilityStateChanged))
+vector 10 MobileGNB.gNodeB posY:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source yCoord(mobilityPos(mobilityStateChanged))
+vector 11 MobileGNB.gNodeB posZ:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source zCoord(mobilityPos(mobilityStateChanged))
+vector 12 MobileGNB.gNodeB.cellularNic.mac avgServedBlocksUl:vector ETV
+attr recordingmode vector
+attr source avgServedBlocksUl
+attr title "Avg Served Blocks Ul"
+attr unit blocks
+vector 13 MobileGNB.gNodeB.cellularNic.mac avgServedBlocksDl:vector ETV
+attr recordingmode vector
+attr source avgServedBlocksDl
+attr title "Avg Served Blocks Dl"
+attr unit blocks
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+1	0	0	0
+1	0	0	0
+1	0	0	0
+1	0	0	0
+1	0	0	0
+2	0	0	0
+3	0	0	0
+3	0	0	0
+3	0	0	0
+3	0	0	0
+3	0	0	0
+4	0	0	0
+4	0	0	0
+4	0	0	0
+4	0	0	0
+4	0	0	0
+5	0	0	0
+6	0	0	0
+7	0	0	0
+8	0	0	0
+9	0	0	50
+10	0	0	200
+11	0	0	0
+12	4	0.001	0
+12	6	0.002	0
+12	8	0.003	0
+12	10	0.004	0
+12	12	0.005	0
+12	14	0.006	0
+12	16	0.007	0
+12	18	0.008	0
+12	20	0.009	0
+12	22	0.01	0
+12	24	0.011	0
+12	26	0.012	0
+12	28	0.013	0
+12	30	0.014	0
+12	32	0.015	0
+12	34	0.016	0
+12	36	0.017	0
+12	38	0.018	0
+12	40	0.019	0
+12	42	0.02	0
+12	44	0.021	0
+12	46	0.022	0
+12	48	0.023	0
+12	50	0.024	0
+12	52	0.025	0
+12	54	0.026	0
+12	56	0.027	0
+12	58	0.028	0
+12	60	0.029	0
+12	62	0.03	0
+12	64	0.031	0
+12	66	0.032	0
+12	68	0.033	0
+12	70	0.034	0
+12	72	0.035	0
+12	74	0.036	0
+13	4	0.001	0
+13	6	0.002	0
+13	8	0.003	0
+13	10	0.004	0
+13	12	0.005	0
+13	14	0.006	0
+13	16	0.007	0
+13	18	0.008	0
+13	20	0.009	0
+13	22	0.01	0
+13	24	0.011	0
+13	26	0.012	0
+13	28	0.013	0
+13	30	0.014	0
+13	32	0.015	0
+13	34	0.016	0
+13	36	0.017	0
+13	38	0.018	0
+13	40	0.019	0
+13	42	0.02	0
+13	44	0.021	0
+13	46	0.022	0
+13	48	0.023	0
+13	50	0.024	0
+13	52	0.025	0
+13	54	0.026	0
+13	56	0.027	0
+13	58	0.028	0
+13	60	0.029	0
+13	62	0.03	0
+13	64	0.031	0
+13	66	0.032	0
+13	68	0.033	0
+13	70	0.034	0
+13	72	0.035	0
+13	74	0.036	0
+vector 14 MobileGNB.gNodeB.pppIf.queue outgoingDataRate:vector ETV
+attr interpolationmode linear
+attr recordingmode vector
+attr source throughput(packetPulled)
+attr title "outgoing datarate"
+attr unit bps
+vector 15 MobileGNB.gNodeB.pppIf.queue incomingDataRate:vector ETV
+attr interpolationmode linear
+attr recordingmode vector
+attr source throughput(packetPushStarted)
+attr title "incoming datarate"
+attr unit bps
+vector 16 MobileGNB.gNodeB.pppMEHostIf.queue outgoingDataRate:vector ETV
+attr interpolationmode linear
+attr recordingmode vector
+attr source throughput(packetPulled)
+attr title "outgoing datarate"
+attr unit bps
+vector 17 MobileGNB.gNodeB.pppMEHostIf.queue incomingDataRate:vector ETV
+attr interpolationmode linear
+attr recordingmode vector
+attr source throughput(packetPushStarted)
+attr title "incoming datarate"
+attr unit bps
+14	74	0.036	0
+15	74	0.036	0
+16	74	0.036	0
+17	74	0.036	0
+

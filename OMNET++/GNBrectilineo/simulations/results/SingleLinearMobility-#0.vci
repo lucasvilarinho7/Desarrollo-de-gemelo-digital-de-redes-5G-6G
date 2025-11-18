@@ -1,0 +1,145 @@
+                                                                
+version 3
+run SingleLinearMobility-0-20251118-13:53:42-421196
+attr configname SingleLinearMobility
+attr datetime 20251118-13:53:42
+attr datetimef 20251118-135342
+attr experiment SingleLinearMobility
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network gnbrectilineo.MobileGNB
+attr processid 421196
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../inet4.5/images:../../simu5g/images:../../../veins-veins-5.3.1/images:../../../veins-veins-5.3.1/subprojects/veins_inet/images
+config extends "Area, MobileNetwork, Update, Visualization"
+config *.numGnbs 1
+config *.gNodeB[0].mobility.typename LinearMobility
+config *.gNodeB[0].mobility.initFromDisplayString false
+config *.gNodeB[0].mobility.speed 20mps
+config *.gNodeB[0].mobility.initialMovementHeading 45deg
+config *.gNodeB[0].mobility.initialX 100m
+config *.gNodeB[0].mobility.initialY 100m
+config *.gNodeB[0].mobility.initialZ 0m
+config *.gNodeB[0].coverageRange 300m
+config *.gNodeB[0].coverageColor "\"#0000ff\""
+config *.gNodeB[0].coverageOpacity 0.2
+config *.gNodeB[0].mobility.displayTrail true
+config **.constraintAreaMinX 0m
+config **.constraintAreaMinY 0m
+config **.constraintAreaMinZ 0m
+config **.constraintAreaMaxX 1200m
+config **.constraintAreaMaxY 800m
+config **.constraintAreaMaxZ 0m
+config network gnbrectilineo.MobileGNB
+config **.mobility.updateInterval 0.1s
+config *.visualizer.*.mobilityVisualizer.displayMovements true
+config *.visualizer.*.mobilityVisualizer.displayVelocities true
+config *.visualizer.*.mobilityVisualizer.displayOrientations true
+config *.visualizer.*.mobilityVisualizer.moduleFilter "\"*.gNodeB[*]\""
+config *.visualizer.*.mobilityVisualizer.trail.visible true
+config *.visualizer.*.mobilityVisualizer.trail.lineWidth 2
+config sim-time-limit 1000s
+
+vector 0 MobileGNB.gNodeB[0].pppIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 1 MobileGNB.gNodeB[0].pppIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 2 MobileGNB.gNodeB[0].pppIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 3 MobileGNB.gNodeB[0].pppMEHostIf.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length"
+attr unit pk
+vector 4 MobileGNB.gNodeB[0].pppMEHostIf.queue queueBitLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length"
+attr unit b
+vector 5 MobileGNB.gNodeB[0].pppMEHostIf.ppp transmissionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source transmissionStateChanged
+attr title "tx state"
+vector 6 MobileGNB.gNodeB[0].udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 7 MobileGNB.gNodeB[0].udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 8 MobileGNB.gNodeB[0].udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 9 MobileGNB.gNodeB[0] posX:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source xCoord(mobilityPos(mobilityStateChanged))
+vector 10 MobileGNB.gNodeB[0] posY:vector ETV
+attr "" ""
+attr recordingmode vector
+attr source yCoord(mobilityPos(mobilityStateChanged))
+vector 11 MobileGNB.gNodeB[0].cellularNic.mac avgServedBlocksUl:vector ETV
+attr recordingmode vector
+attr source avgServedBlocksUl
+attr title "Avg Served Blocks Ul"
+attr unit blocks
+vector 12 MobileGNB.gNodeB[0].cellularNic.mac avgServedBlocksDl:vector ETV
+attr recordingmode vector
+attr source avgServedBlocksDl
+attr title "Avg Served Blocks Dl"
+attr unit blocks
+11	5077 570640 4 65898 0.001 32.768 32768 0 0 0 0
+12	575717 570640 4 65898 0.001 32.768 32768 0 0 0 0
+11	1146357 601964 65900 131795 32.769 65.536 32768 0 0 0 0
+12	1748321 601964 65900 131795 32.769 65.536 32768 0 0 0 0
+11	2350285 618921 131797 197692 65.537 98.304 32768 0 0 0 0
+12	2969206 618921 131797 197692 65.537 98.304 32768 0 0 0 0
+11	3588127 649995 197694 263588 98.305 131.072 32768 0 0 0 0
+12	4238122 649995 197694 263588 98.305 131.072 32768 0 0 0 0
+11	4888117 651691 263590 329484 131.073 163.84 32768 0 0 0 0
+12	5539808 651691 263590 329484 131.073 163.84 32768 0 0 0 0
+11	6191499 651690 329486 395381 163.841 196.608 32768 0 0 0 0
+12	6843189 651690 329486 395381 163.841 196.608 32768 0 0 0 0
+0	7494879 40 0 0 0 0 5 0 0 0 0
+1	7494919 40 0 0 0 0 5 0 0 0 0
+2	7494959 8 0 0 0 0 1 0 0 0 0
+3	7494967 40 0 0 0 0 5 0 0 0 0
+4	7495007 40 0 0 0 0 5 0 0 0 0
+5	7495047 8 0 0 0 0 1 0 0 0 0
+6	7495055 8 0 0 0 0 1 0 0 0 0
+7	7495063 8 0 0 0 0 1 0 0 0 0
+8	7495071 8 0 0 0 0 1 0 0 0 0
+9	7495079 68580 0 449356 0 223.448 2292 0.48874758133055 1199.7418484737 1295343.7495215 977239702.86635
+10	7563659 70877 0 449356 0 223.448 2292 0.043871278154791 799.96428662531 913051.74721766 486303161.09254
+11	7634536 533794 395383 449356 196.609 223.448 26840 0 0 0 0
+12	8168330 533794 395383 449356 196.609 223.448 26840 0 0 0 0

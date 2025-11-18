@@ -1,0 +1,1803 @@
+version 3
+run General-0-20251117-12:12:12-113052
+attr configname General
+attr datetime 20251117-12:12:12
+attr datetimef 20251117-121212
+attr experiment General
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network gnbrectilineo.MobileGNB
+attr processid 113052
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../inet4.5/images:../../simu5g/images:../../../veins-veins-5.3.1/images:../../../veins-veins-5.3.1/subprojects/veins_inet/images
+config sim-time-limit 1000s
+config network gnbrectilineo.MobileGNB
+config *.binder.numChannels 1
+config *.channelControl.pMax 10W
+config *.channelControl.alpha 1.0
+config *.channelControl.carrierFrequency 2GHz
+config **.constraintAreaMinX 0m
+config **.constraintAreaMinY 0m
+config **.constraintAreaMinZ 0m
+config **.constraintAreaMaxX 600m
+config **.constraintAreaMaxY 400m
+config **.constraintAreaMaxZ 0m
+config *.gNodeB.mobility.typename LinearMobility
+config *.gNodeB.mobility.initFromDisplayString false
+config *.gNodeB.mobility.updateInterval 0.1s
+config *.gNodeB.mobility.speed 20mps
+config *.gNodeB.mobility.initialMovementHeading 30deg
+config *.gNodeB.mobility.initialX 50m
+config *.gNodeB.mobility.initialY 200m
+config *.gNodeB.mobility.**.displayTrail true
+
+par MobileGNB.channelControl typename "\"simu5g.world.radio.LteChannelControl\""
+par MobileGNB.channelControl coreDebug false
+par MobileGNB.channelControl pMax 10000mW
+attr unit mW
+par MobileGNB.channelControl sat -110dBm
+attr unit dBm
+par MobileGNB.channelControl alpha 1
+par MobileGNB.channelControl carrierFrequency 2e+09Hz
+attr unit Hz
+par MobileGNB.channelControl numChannels 1
+par MobileGNB.channelControl propagationModel "\"FreeSpaceModel\""
+attr enum FreeSpaceModel,TwoRayGroundModel,RiceModel,RayleighModel,NakagamiModel,LogNormalShadowingModel
+par MobileGNB.binder typename "\"simu5g.common.binder.Binder\""
+par MobileGNB.binder blerShift 0
+par MobileGNB.binder maxDataRatePerRb 1.16Mbps
+attr unit Mbps
+par MobileGNB.binder printTrafficGeneratorConfig false
+par MobileGNB.carrierAggregation.componentCarrier[0] typename "\"simu5g.common.carrierAggregation.ComponentCarrier\""
+par MobileGNB.carrierAggregation.componentCarrier[0] carrierFrequency 2GHz
+attr unit GHz
+par MobileGNB.carrierAggregation.componentCarrier[0] numBands 6
+par MobileGNB.carrierAggregation.componentCarrier[0] numerologyIndex 0
+par MobileGNB.carrierAggregation.componentCarrier[0] useTdd false
+par MobileGNB.carrierAggregation.componentCarrier[0] tddNumSymbolsDl 7
+par MobileGNB.carrierAggregation.componentCarrier[0] tddNumSymbolsUl 7
+par MobileGNB.carrierAggregation typename "\"simu5g.common.carrierAggregation.CarrierAggregation\""
+par MobileGNB.carrierAggregation numComponentCarriers 1
+par MobileGNB.configurator typename "\"inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator\""
+par MobileGNB.configurator minLinkWeight 0.001
+par MobileGNB.configurator configureIsolatedNetworksSeparatly false
+par MobileGNB.configurator config "<config>...</config> at content:1"
+par MobileGNB.configurator assignAddresses true
+par MobileGNB.configurator assignUniqueAddresses true
+par MobileGNB.configurator assignDisjunctSubnetAddresses true
+par MobileGNB.configurator addStaticRoutes true
+par MobileGNB.configurator addDefaultRoutes true
+par MobileGNB.configurator addSubnetRoutes true
+par MobileGNB.configurator addDirectRoutes true
+par MobileGNB.configurator optimizeRoutes true
+par MobileGNB.configurator dumpTopology false
+par MobileGNB.configurator dumpLinks false
+par MobileGNB.configurator dumpAddresses false
+par MobileGNB.configurator dumpRoutes false
+par MobileGNB.configurator dumpConfig "\"\""
+par MobileGNB.gNodeB.interfaceTable typename "\"inet.networklayer.common.InterfaceTable\""
+par MobileGNB.gNodeB.interfaceTable displayAddresses false
+par MobileGNB.gNodeB.mobility typename "\"inet.mobility.static.StationaryMobility\""
+par MobileGNB.gNodeB.mobility subjectModule "\"^\""
+par MobileGNB.gNodeB.mobility coordinateSystemModule "\"\""
+par MobileGNB.gNodeB.mobility displayStringTextFormat "\"p: %p\\nv: %v\""
+attr mutable ""
+par MobileGNB.gNodeB.mobility updateDisplayString true
+par MobileGNB.gNodeB.mobility constraintAreaMinX 0m
+attr unit m
+par MobileGNB.gNodeB.mobility constraintAreaMinY 0m
+attr unit m
+par MobileGNB.gNodeB.mobility constraintAreaMinZ 0m
+attr unit m
+par MobileGNB.gNodeB.mobility constraintAreaMaxX 600m
+attr unit m
+par MobileGNB.gNodeB.mobility constraintAreaMaxY 400m
+attr unit m
+par MobileGNB.gNodeB.mobility constraintAreaMaxZ 0m
+attr unit m
+par MobileGNB.gNodeB.mobility initialX 50m
+attr unit m
+par MobileGNB.gNodeB.mobility initialY 200m
+attr unit m
+par MobileGNB.gNodeB.mobility initialZ 0m
+attr unit m
+par MobileGNB.gNodeB.mobility initialLatitude "nan deg"
+attr unit deg
+par MobileGNB.gNodeB.mobility initialLongitude "nan deg"
+attr unit deg
+par MobileGNB.gNodeB.mobility initialAltitude 0m
+attr unit m
+par MobileGNB.gNodeB.mobility initialHeading 0deg
+attr unit deg
+par MobileGNB.gNodeB.mobility initialElevation 0deg
+attr unit deg
+par MobileGNB.gNodeB.mobility initialBank 0deg
+attr unit deg
+par MobileGNB.gNodeB.mobility initFromDisplayString false
+par MobileGNB.gNodeB.mobility updateFromDisplayString true
+par MobileGNB.gNodeB.cellInfo typename "\"simu5g.common.cellInfo.CellInfo\""
+par MobileGNB.gNodeB.cellInfo constraintAreaMinX 0m
+attr unit m
+par MobileGNB.gNodeB.cellInfo constraintAreaMinY 0m
+attr unit m
+par MobileGNB.gNodeB.cellInfo constraintAreaMaxX 600m
+attr unit m
+par MobileGNB.gNodeB.cellInfo constraintAreaMaxY 400m
+attr unit m
+par MobileGNB.gNodeB.cellInfo speed 0mps
+attr unit mps
+par MobileGNB.gNodeB.cellInfo positionUpdateInterval 0.001s
+attr unit s
+par MobileGNB.gNodeB.cellInfo broadcastMessageInterval 1s
+attr unit s
+par MobileGNB.gNodeB.cellInfo microCell false
+par MobileGNB.gNodeB.cellInfo numRus 0
+par MobileGNB.gNodeB.cellInfo ruRange 0
+par MobileGNB.gNodeB.cellInfo ruStartingAngle 0deg
+attr unit deg
+par MobileGNB.gNodeB.cellInfo ruTxPower "\"0;\""
+par MobileGNB.gNodeB.cellInfo antennaCws "\"1;\""
+par MobileGNB.gNodeB.cellInfo rbyDl 12
+par MobileGNB.gNodeB.cellInfo rbyUl 12
+par MobileGNB.gNodeB.cellInfo rbxDl 7
+par MobileGNB.gNodeB.cellInfo rbxUl 7
+par MobileGNB.gNodeB.cellInfo rbPilotDl 3
+par MobileGNB.gNodeB.cellInfo rbPilotUl 0
+par MobileGNB.gNodeB.cellInfo signalDl 1
+par MobileGNB.gNodeB.cellInfo signalUl 1
+par MobileGNB.gNodeB.cellInfo numPreferredBands 1
+par MobileGNB.gNodeB.cellularNic.ip2nic.upperLayerOut.channel typename "\"ned.DelayChannel\""
+par MobileGNB.gNodeB.cellularNic.ip2nic.upperLayerOut.channel disabled false
+attr mutable ""
+par MobileGNB.gNodeB.cellularNic.ip2nic.upperLayerOut.channel delay 0s
+attr mutable ""
+attr unit s
+par MobileGNB.gNodeB.cellularNic.upperLayerIn.channel typename "\"ned.DelayChannel\""
+par MobileGNB.gNodeB.cellularNic.upperLayerIn.channel disabled false
+attr mutable ""
+par MobileGNB.gNodeB.cellularNic.upperLayerIn.channel delay 0s
+attr mutable ""
+attr unit s
+par MobileGNB.gNodeB.cellularNic.ip2nic typename "\"simu5g.stack.ip2nic.IP2Nic\""
+par MobileGNB.gNodeB.cellularNic.ip2nic nodeType "\"GNODEB\""
+par MobileGNB.gNodeB.cellularNic.ip2nic interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.cellularNic.ip2nic interfaceName "\"cellular\""
+par MobileGNB.gNodeB.cellularNic.ip2nic routingTableModule "\"^.ipv4.routingTable\""
+par MobileGNB.gNodeB.cellularNic.pdcpRrc typename "\"simu5g.stack.pdcp_rrc.NRPdcpRrcEnb\""
+par MobileGNB.gNodeB.cellularNic.pdcpRrc headerCompressedSize -1B
+attr unit B
+par MobileGNB.gNodeB.cellularNic.pdcpRrc conversationalRlc 1
+par MobileGNB.gNodeB.cellularNic.pdcpRrc streamingRlc 1
+par MobileGNB.gNodeB.cellularNic.pdcpRrc interactiveRlc 1
+par MobileGNB.gNodeB.cellularNic.pdcpRrc backgroundRlc 1
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc sentPacketToLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc sentPacketToLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc sentPacketToUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc sentPacketToUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc receivedPacketFromLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc receivedPacketFromLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc receivedPacketFromUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.pdcpRrc receivedPacketFromUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromUpperLayer
+par MobileGNB.gNodeB.cellularNic.rlc.tm typename "\"simu5g.stack.rlc.LteRlcTm\""
+par MobileGNB.gNodeB.cellularNic.rlc.tm queueSize 2097152B
+attr unit B
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm rlcPacketLossDl:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossDl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm rlcPacketLossDl:sum 0
+attr recordingmode sum
+attr source rlcPacketLossDl
+attr title "rlc Packet Loss, sum"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm rlcPacketLossUl:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossUl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm rlcPacketLossUl:sum 0
+attr recordingmode sum
+attr source rlcPacketLossUl
+attr title "rlc Packet Loss, sum"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm sentPacketToLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm sentPacketToLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm sentPacketToUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm sentPacketToUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm receivedPacketFromLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm receivedPacketFromLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm receivedPacketFromUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.tm receivedPacketFromUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromUpperLayer
+par MobileGNB.gNodeB.cellularNic.rlc.um typename "\"simu5g.stack.rlc.LteRlcUmD2D\""
+par MobileGNB.gNodeB.cellularNic.rlc.um queueSize 2097152B
+attr unit B
+par MobileGNB.gNodeB.cellularNic.rlc.um mapAllLcidsToSingleBearer false
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduPacketLossD2D:mean -nan
+attr recordingmode mean
+attr source rlcPduPacketLossD2D
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduThroughputD2D:mean -nan
+attr recordingmode mean
+attr source rlcPduThroughputD2D
+attr title "Throughput at the rlc layer D2D, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduDelayD2D:mean -nan
+attr recordingmode mean
+attr source rlcPduDelayD2D
+attr title "Delay at the rlc layer D2D, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcCellThroughputD2D:mean -nan
+attr recordingmode mean
+attr source rlcCellThroughputD2D
+attr title "Cell Throughput at the rlc layer D2D, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcCellPacketLossD2D:mean -nan
+attr recordingmode mean
+attr source rlcCellPacketLossD2D
+attr title "rlc Cell Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPacketLossD2D:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossD2D
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcThroughputD2D:mean -nan
+attr recordingmode mean
+attr source rlcThroughputD2D
+attr title "Throughput at the rlc layer D2D, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcDelayD2D:mean -nan
+attr recordingmode mean
+attr source rlcDelayD2D
+attr title "Delay at the rlc layer D2D, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduPacketLossDl:mean -nan
+attr recordingmode mean
+attr source rlcPduPacketLossDl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduPacketLossUl:mean -nan
+attr recordingmode mean
+attr source rlcPduPacketLossUl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduThroughputUl:mean -nan
+attr recordingmode mean
+attr source rlcPduThroughputUl
+attr title "Throughput at the rlc layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduDelayUl:mean -nan
+attr recordingmode mean
+attr source rlcPduDelayUl
+attr title "Delay at the rlc layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduThroughputDl:mean -nan
+attr recordingmode mean
+attr source rlcPduThroughputDl
+attr title "Throughput at the rlc layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPduDelayDl:mean -nan
+attr recordingmode mean
+attr source rlcPduDelayDl
+attr title "Delay at the rlc layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcCellPacketLossUl:mean -nan
+attr recordingmode mean
+attr source rlcCellPacketLossUl
+attr title "rlc Cell Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcCellPacketLossDl:mean -nan
+attr recordingmode mean
+attr source rlcCellPacketLossDl
+attr title "rlc Cell Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcCellThroughputDl:mean -nan
+attr recordingmode mean
+attr source rlcCellThroughputDl
+attr title "Cell Throughput at the rlc layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcCellThroughputUl:mean -nan
+attr recordingmode mean
+attr source rlcCellThroughputUl
+attr title "Cell Throughput at the rlc layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPacketLossTotal:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossTotal
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcThroughputUl:mean -nan
+attr recordingmode mean
+attr source rlcThroughputUl
+attr title "Throughput at the rlc layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcDelayUl:mean -nan
+attr recordingmode mean
+attr source rlcDelayUl
+attr title "Delay at the rlc layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcThroughputDl:mean -nan
+attr recordingmode mean
+attr source rlcThroughputDl
+attr title "Throughput at the rlc layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcDelayDl:mean -nan
+attr recordingmode mean
+attr source rlcDelayDl
+attr title "Delay at the rlc layer DL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPacketLossDl:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossDl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPacketLossDl:sum 0
+attr recordingmode sum
+attr source rlcPacketLossDl
+attr title "rlc Packet Loss, sum"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPacketLossUl:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossUl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um rlcPacketLossUl:sum 0
+attr recordingmode sum
+attr source rlcPacketLossUl
+attr title "rlc Packet Loss, sum"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.um sentPacketToLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.um sentPacketToLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.um sentPacketToUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.um sentPacketToUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.um receivedPacketFromLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.um receivedPacketFromLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.um receivedPacketFromUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.rlc.um receivedPacketFromUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromUpperLayer
+par MobileGNB.gNodeB.cellularNic.rlc.am typename "\"simu5g.stack.rlc.LteRlcAm\""
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPduPacketLossDl:mean -nan
+attr recordingmode mean
+attr source rlcPduPacketLossDl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPduPacketLossUl:mean -nan
+attr recordingmode mean
+attr source rlcPduPacketLossUl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPduThroughputUl:mean -nan
+attr recordingmode mean
+attr source rlcPduThroughputUl
+attr title "Throughput at the rlc layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPduDelayUl:mean -nan
+attr recordingmode mean
+attr source rlcPduDelayUl
+attr title "Delay at the rlc layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPduThroughputDl:mean -nan
+attr recordingmode mean
+attr source rlcPduThroughputDl
+attr title "Throughput at the rlc layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPduDelayDl:mean -nan
+attr recordingmode mean
+attr source rlcPduDelayDl
+attr title "Delay at the rlc layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcCellPacketLossUl:mean -nan
+attr recordingmode mean
+attr source rlcCellPacketLossUl
+attr title "rlc Cell Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcCellPacketLossDl:mean -nan
+attr recordingmode mean
+attr source rlcCellPacketLossDl
+attr title "rlc Cell Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcCellThroughputDl:mean -nan
+attr recordingmode mean
+attr source rlcCellThroughputDl
+attr title "Cell Throughput at the rlc layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcCellThroughputUl:mean -nan
+attr recordingmode mean
+attr source rlcCellThroughputUl
+attr title "Cell Throughput at the rlc layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPacketLossTotal:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossTotal
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcThroughputUl:mean -nan
+attr recordingmode mean
+attr source rlcThroughputUl
+attr title "Throughput at the rlc layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcDelayUl:mean -nan
+attr recordingmode mean
+attr source rlcDelayUl
+attr title "Delay at the rlc layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcThroughputDl:mean -nan
+attr recordingmode mean
+attr source rlcThroughputDl
+attr title "Throughput at the rlc layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcDelayDl:mean -nan
+attr recordingmode mean
+attr source rlcDelayDl
+attr title "Delay at the rlc layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPacketLossDl:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossDl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.rlc.am rlcPacketLossUl:mean -nan
+attr recordingmode mean
+attr source rlcPacketLossUl
+attr title "rlc Packet Loss, mean"
+attr unit ""
+par MobileGNB.gNodeB.cellularNic.rlc.mux typename "\"simu5g.stack.rlc.LteRlcMux\""
+par MobileGNB.gNodeB.cellularNic.rlc typename "\"simu5g.stack.rlc.LteRlc\""
+par MobileGNB.gNodeB.cellularNic.rlc LteRlcUmType "\"LteRlcUm\""
+par MobileGNB.gNodeB.cellularNic.rlc d2dCapable true
+par MobileGNB.gNodeB.cellularNic.rlc umType "\"LteRlcUmD2D\""
+par MobileGNB.gNodeB.cellularNic.mac typename "\"simu5g.stack.mac.NRMacGnb\""
+par MobileGNB.gNodeB.cellularNic.mac interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.cellularNic.mac interfaceName "\"cellular\""
+par MobileGNB.gNodeB.cellularNic.mac queueSize 2097152B
+attr unit B
+par MobileGNB.gNodeB.cellularNic.mac muMimo true
+par MobileGNB.gNodeB.cellularNic.mac harqProcesses 8
+par MobileGNB.gNodeB.cellularNic.mac maxHarqRtx 3
+par MobileGNB.gNodeB.cellularNic.mac harqFbEvaluationTimer 4
+par MobileGNB.gNodeB.cellularNic.mac statDisplay false
+par MobileGNB.gNodeB.cellularNic.mac amcType "\"NRAmc\""
+par MobileGNB.gNodeB.cellularNic.mac amcMode "\"AUTO\""
+par MobileGNB.gNodeB.cellularNic.mac muMimoMinDistance 50
+par MobileGNB.gNodeB.cellularNic.mac rbAllocationType "\"localized\""
+par MobileGNB.gNodeB.cellularNic.mac summaryLowerBound 0.005s
+attr unit s
+par MobileGNB.gNodeB.cellularNic.mac summaryUpperBound 0.02s
+attr unit s
+par MobileGNB.gNodeB.cellularNic.mac fbhbCapacityDl 5
+par MobileGNB.gNodeB.cellularNic.mac fbhbCapacityUl 5
+par MobileGNB.gNodeB.cellularNic.mac fbhbCapacityD2D 5
+par MobileGNB.gNodeB.cellularNic.mac pmiWeight 0
+par MobileGNB.gNodeB.cellularNic.mac cqiWeight 0
+par MobileGNB.gNodeB.cellularNic.mac eNodeBCount 0
+par MobileGNB.gNodeB.cellularNic.mac schedulingDisciplineDl "\"MAXCI\""
+par MobileGNB.gNodeB.cellularNic.mac schedulingDisciplineUl "\"MAXCI\""
+par MobileGNB.gNodeB.cellularNic.mac pfAlpha 0.95
+par MobileGNB.gNodeB.cellularNic.mac pilotMode "\"ROBUST_CQI\""
+par MobileGNB.gNodeB.cellularNic.mac usePreconfiguredTxParams false
+par MobileGNB.gNodeB.cellularNic.mac d2dCqi 7
+par MobileGNB.gNodeB.cellularNic.mac reuseD2D false
+par MobileGNB.gNodeB.cellularNic.mac reuseD2DMulti false
+par MobileGNB.gNodeB.cellularNic.mac conflictGraphUpdatePeriod 1s
+attr unit s
+par MobileGNB.gNodeB.cellularNic.mac conflictGraphThreshold 90
+par MobileGNB.gNodeB.cellularNic.mac conflictGraphD2DInterferenceRadius -1m
+attr unit m
+par MobileGNB.gNodeB.cellularNic.mac conflictGraphD2DMultiTxRadius -1m
+attr unit m
+par MobileGNB.gNodeB.cellularNic.mac conflictGraphD2DMultiInterferenceRadius -1m
+attr unit m
+par MobileGNB.gNodeB.cellularNic.mac msHarqInterrupt true
+par MobileGNB.gNodeB.cellularNic.mac msClearRlcBuffer true
+scalar MobileGNB.gNodeB.cellularNic.mac macCellPacketLossD2D:mean -nan
+attr recordingmode mean
+attr source macCellPacketLossD2D
+attr title "Mac Cell Packet Loss D2D, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac macCellThroughputD2D:mean -nan
+attr recordingmode mean
+attr source macCellThroughputD2D
+attr title "Cell Throughput at the MAC layer D2D, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.mac avgServedBlocksUl:mean 0
+attr recordingmode mean
+attr source avgServedBlocksUl
+attr title "Avg Served Blocks Ul, mean"
+attr unit blocks
+scalar MobileGNB.gNodeB.cellularNic.mac avgServedBlocksDl:mean 0
+attr recordingmode mean
+attr source avgServedBlocksDl
+attr title "Avg Served Blocks Dl, mean"
+attr unit blocks
+scalar MobileGNB.gNodeB.cellularNic.mac cellBlocksUtilizationUl:mean -nan
+attr recordingmode mean
+attr source cellBlocksUtilizationUl
+attr title "Cell Blocks Utilization Ul, mean"
+attr unit blocks
+scalar MobileGNB.gNodeB.cellularNic.mac cellBlocksUtilizationDl:mean -nan
+attr recordingmode mean
+attr source cellBlocksUtilizationDl
+attr title "Cell Blocks Utilization Dl, mean"
+attr unit blocks
+scalar MobileGNB.gNodeB.cellularNic.mac measuredItbs:mean -nan
+attr recordingmode mean
+attr source measuredItbs
+attr title "TBS index, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_4th_Dl:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_4th_Dl
+attr title "Harq Error Rate Dl (4th tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_4th_Ul:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_4th_Ul
+attr title "Harq Error Rate Ul (4th tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_3rd_Dl:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_3rd_Dl
+attr title "Harq Error Rate Dl (3rd tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_3rd_Ul:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_3rd_Ul
+attr title "Harq Error Rate Ul (3rd tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_2nd_Dl:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_2nd_Dl
+attr title "Harq Error Rate Dl (2nd tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_2nd_Ul:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_2nd_Ul
+attr title "Harq Error Rate Ul (2nd tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_1st_Dl:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_1st_Dl
+attr title "Harq Error Rate Dl (1st tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRate_1st_Ul:mean -nan
+attr recordingmode mean
+attr source harqErrorRate_1st_Ul
+attr title "Harq Error Rate Ul (1st tx), mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqTxAttemptsUl:mean -nan
+attr recordingmode mean
+attr source harqTxAttemptsUl
+attr title "Harq Tx Attempts Ul, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqTxAttemptsDl:mean -nan
+attr recordingmode mean
+attr source harqTxAttemptsDl
+attr title "Harq Tx Attempts Dl, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRateDl:mean -nan
+attr recordingmode mean
+attr source harqErrorRateDl
+attr title "Harq Error Rate Dl, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac harqErrorRateUl:mean -nan
+attr recordingmode mean
+attr source harqErrorRateUl
+attr title "Harq Error Rate Ul, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac macBufferOverFlowD2D:mean -nan
+attr recordingmode mean
+attr source macBufferOverFlowD2D
+attr title "Mac buffer overflow as function of time, mean"
+attr unit Byte/s
+scalar MobileGNB.gNodeB.cellularNic.mac macBufferOverFlowUl:mean -nan
+attr recordingmode mean
+attr source macBufferOverFlowUl
+attr title "Mac buffer overflow as function of time, mean"
+attr unit Byte/s
+scalar MobileGNB.gNodeB.cellularNic.mac macBufferOverFlowDl:mean -nan
+attr recordingmode mean
+attr source macBufferOverFlowDl
+attr title "Mac buffer overflow as function of time, mean"
+attr unit Byte/s
+scalar MobileGNB.gNodeB.cellularNic.mac macPacketLossDl:mean -nan
+attr recordingmode mean
+attr source macPacketLossDl
+attr title "Mac Packet Loss Dl, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac macPacketLossUl:mean -nan
+attr recordingmode mean
+attr source macPacketLossUl
+attr title "Mac Packet Loss Ul, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac macCellPacketLossUl:mean -nan
+attr recordingmode mean
+attr source macCellPacketLossUl
+attr title "Mac Cell Packet Loss Ul, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac macCellPacketLossDl:mean -nan
+attr recordingmode mean
+attr source macCellPacketLossDl
+attr title "Mac Cell Packet Loss Dl, mean"
+attr unit ""
+scalar MobileGNB.gNodeB.cellularNic.mac macCellThroughputDl:mean -nan
+attr recordingmode mean
+attr source macCellThroughputDl
+attr title "Cell Throughput at the MAC layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.mac macCellThroughputUl:mean -nan
+attr recordingmode mean
+attr source macCellThroughputUl
+attr title "Cell Throughput at the MAC layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.mac macThroughputUl:mean -nan
+attr recordingmode mean
+attr source macThroughputUl
+attr title "Throughput at the MAC layer UL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.mac macDelayUl:mean -nan
+attr recordingmode mean
+attr source macDelayUl
+attr title "Delay at the MAC layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.mac macThroughputDl:mean -nan
+attr recordingmode mean
+attr source macThroughputDl
+attr title "Throughput at the MAC layer DL, mean"
+attr unit Bps
+scalar MobileGNB.gNodeB.cellularNic.mac macDelayDl:mean -nan
+attr recordingmode mean
+attr source macDelayDl
+attr title "Delay at the MAC layer UL, mean"
+attr unit s
+scalar MobileGNB.gNodeB.cellularNic.mac sentPacketToLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.mac sentPacketToLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.mac sentPacketToUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.mac sentPacketToUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source sentPacketToUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.mac receivedPacketFromLowerLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.mac receivedPacketFromLowerLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromLowerLayer
+scalar MobileGNB.gNodeB.cellularNic.mac receivedPacketFromUpperLayer:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source receivedPacketFromUpperLayer
+scalar MobileGNB.gNodeB.cellularNic.mac receivedPacketFromUpperLayer:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source receivedPacketFromUpperLayer
+par MobileGNB.gNodeB.cellularNic.phy typename "\"simu5g.stack.phy.LtePhyEnbD2D\""
+par MobileGNB.gNodeB.cellularNic.phy ueTxPower 26
+par MobileGNB.gNodeB.cellularNic.phy eNodeBTxPower 46
+par MobileGNB.gNodeB.cellularNic.phy microTxPower 30
+par MobileGNB.gNodeB.cellularNic.phy txDirection "\"OMNI\""
+par MobileGNB.gNodeB.cellularNic.phy txAngle 0
+par MobileGNB.gNodeB.cellularNic.phy dynamicCellAssociation false
+par MobileGNB.gNodeB.cellularNic.phy enableHandover false
+par MobileGNB.gNodeB.cellularNic.phy handoverLatency 0.05s
+attr unit s
+par MobileGNB.gNodeB.cellularNic.phy enableMulticastD2DRangeCheck false
+par MobileGNB.gNodeB.cellularNic.phy multicastD2DRange 1000m
+attr unit m
+par MobileGNB.gNodeB.cellularNic.phy targetBler 0.001
+par MobileGNB.gNodeB.cellularNic.phy lambdaMinTh 0.02
+par MobileGNB.gNodeB.cellularNic.phy lambdaMaxTh 0.2
+par MobileGNB.gNodeB.cellularNic.phy lambdaRatioTh 20
+par MobileGNB.gNodeB.cellularNic.phy enableD2DCqiReporting true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] typename "\"simu5g.stack.phy.ChannelModel.NRChannelModel_3GPP38_901\""
+par MobileGNB.gNodeB.cellularNic.channelModel[0] componentCarrierIndex 0
+par MobileGNB.gNodeB.cellularNic.channelModel[0] shadowing true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] scenario "\"URBAN_MACROCELL\""
+par MobileGNB.gNodeB.cellularNic.channelModel[0] nodeb_height 25
+par MobileGNB.gNodeB.cellularNic.channelModel[0] building_height 20
+par MobileGNB.gNodeB.cellularNic.channelModel[0] inside_building false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] street_wide 20
+par MobileGNB.gNodeB.cellularNic.channelModel[0] ue_height 1.5
+par MobileGNB.gNodeB.cellularNic.channelModel[0] tolerateMaxDistViolation false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] useTorus false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] correlation_distance 50
+par MobileGNB.gNodeB.cellularNic.channelModel[0] targetBler 0.01
+par MobileGNB.gNodeB.cellularNic.channelModel[0] harqReduction 0.2
+par MobileGNB.gNodeB.cellularNic.channelModel[0] lambdaMinTh 0.02
+par MobileGNB.gNodeB.cellularNic.channelModel[0] lambdaMaxTh 0.2
+par MobileGNB.gNodeB.cellularNic.channelModel[0] lambdaRatioTh 20
+par MobileGNB.gNodeB.cellularNic.channelModel[0] antennaGainUe 0
+par MobileGNB.gNodeB.cellularNic.channelModel[0] antennGainEnB 18
+par MobileGNB.gNodeB.cellularNic.channelModel[0] antennGainMicro 5
+par MobileGNB.gNodeB.cellularNic.channelModel[0] thermalNoise -104.5
+par MobileGNB.gNodeB.cellularNic.channelModel[0] ue_noise_figure 7
+par MobileGNB.gNodeB.cellularNic.channelModel[0] bs_noise_figure 5
+par MobileGNB.gNodeB.cellularNic.channelModel[0] cable_loss 2
+par MobileGNB.gNodeB.cellularNic.channelModel[0] dynamic_los false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] fixed_los false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] fading true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] fading_type "\"JAKES\""
+par MobileGNB.gNodeB.cellularNic.channelModel[0] fading_paths 6
+par MobileGNB.gNodeB.cellularNic.channelModel[0] delay_rms 3.63e-07
+par MobileGNB.gNodeB.cellularNic.channelModel[0] bgCell_interference true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] extCell_interference true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] downlink_interference false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] uplink_interference false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] d2d_interference true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] enable_extCell_los true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] useRsrqFromLog false
+par MobileGNB.gNodeB.cellularNic.channelModel[0] rsrqShift 22
+par MobileGNB.gNodeB.cellularNic.channelModel[0] rsrqScale 1
+par MobileGNB.gNodeB.cellularNic.channelModel[0] collectSinrStatistics true
+par MobileGNB.gNodeB.cellularNic.channelModel[0] useBuildingPenetrationLossHighLossModel false
+scalar MobileGNB.gNodeB.cellularNic.channelModel[0] distance:mean -nan
+attr recordingmode mean
+attr source distance
+attr title "distance between UE and serving base station, mean"
+attr unit meters
+scalar MobileGNB.gNodeB.cellularNic.channelModel[0] measuredSinrUl:mean -nan
+attr recordingmode mean
+attr source measuredSinrUl
+attr title "SINR measured at feedback computation, UL, mean"
+attr unit dB
+scalar MobileGNB.gNodeB.cellularNic.channelModel[0] measuredSinrDl:mean -nan
+attr recordingmode mean
+attr source measuredSinrDl
+attr title "SINR measured at feedback computation, DL, mean"
+attr unit dB
+scalar MobileGNB.gNodeB.cellularNic.channelModel[0] rcvdSinrUl:mean -nan
+attr recordingmode mean
+attr source rcvdSinrUl
+attr title "SINR measured at packet reception, UL, mean"
+attr unit dB
+scalar MobileGNB.gNodeB.cellularNic.channelModel[0] rcvdSinrDl:mean -nan
+attr recordingmode mean
+attr source rcvdSinrDl
+attr title "SINR measured at packet reception, DL, mean"
+attr unit dB
+par MobileGNB.gNodeB.cellularNic.x2Manager typename "\"simu5g.x2.LteX2Manager\""
+par MobileGNB.gNodeB.cellularNic.handoverManager typename "\"simu5g.stack.handoverManager.LteHandoverManager\""
+par MobileGNB.gNodeB.cellularNic.handoverManager losslessHandover false
+par MobileGNB.gNodeB.cellularNic.bgTrafficGenerator[0].manager typename "\"simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficManager\""
+par MobileGNB.gNodeB.cellularNic.bgTrafficGenerator[0] typename "\"simu5g.stack.backgroundTrafficGenerator.BackgroundTrafficGenerator\""
+par MobileGNB.gNodeB.cellularNic.bgTrafficGenerator[0] numBgUes 0
+par MobileGNB.gNodeB.cellularNic.bgTrafficGenerator[0] bgTrafficManagerType "\"BackgroundTrafficManager\""
+par MobileGNB.gNodeB.cellularNic.bgTrafficGenerator[0] enablePeriodicCqiUpdate true
+par MobileGNB.gNodeB.cellularNic.bgTrafficGenerator[0] useProbabilisticCqi false
+par MobileGNB.gNodeB.cellularNic.bgTrafficGenerator[0] computeAvgInterference false
+par MobileGNB.gNodeB.cellularNic.d2dModeSelection typename "\"simu5g.stack.d2dModeSelection.D2DModeSelectionBase\""
+par MobileGNB.gNodeB.cellularNic.d2dModeSelection modeSelectionPeriod 1s
+attr unit s
+par MobileGNB.gNodeB.cellularNic typename "\"simu5g.stack.NRNicEnb\""
+par MobileGNB.gNodeB.cellularNic displayStringTextFormat "\"%a (%i)\\n%m\""
+par MobileGNB.gNodeB.cellularNic recordPcap false
+par MobileGNB.gNodeB.cellularNic numPcapRecorders 0
+par MobileGNB.gNodeB.cellularNic isWireless true
+par MobileGNB.gNodeB.cellularNic interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.cellularNic routingTableModule "\"^.ipv4.routingTable\""
+par MobileGNB.gNodeB.cellularNic LtePdcpRrcType "\"NRPdcpRrcEnb\""
+par MobileGNB.gNodeB.cellularNic LteMacType "\"NRMacGnb\""
+par MobileGNB.gNodeB.cellularNic PacketFlowManagerType "\"NRPacketFlowManagerGnb\""
+par MobileGNB.gNodeB.cellularNic hasRNISupport false
+par MobileGNB.gNodeB.cellularNic LtePhyType "\"LtePhyEnbD2D\""
+par MobileGNB.gNodeB.cellularNic nodeType "\"GNODEB\""
+par MobileGNB.gNodeB.cellularNic processingDelayIn 0s
+attr unit s
+par MobileGNB.gNodeB.cellularNic processingDelayOut 0s
+attr unit s
+par MobileGNB.gNodeB.cellularNic LteChannelModelType "\"NRChannelModel_3GPP38_901\""
+par MobileGNB.gNodeB.cellularNic d2dCapable true
+par MobileGNB.gNodeB.cellularNic dualConnectivityEnabled false
+par MobileGNB.gNodeB.cellularNic numCarriers 1
+par MobileGNB.gNodeB.cellularNic address "\"0A-AA-00-00-00-01\""
+attr mutable ""
+par MobileGNB.gNodeB.cellularNic compEnabled false
+par MobileGNB.gNodeB.cellularNic LteCompManagerType "\"LteCompManagerProportional\""
+par MobileGNB.gNodeB.cellularNic d2dModeSelectionType "\"D2DModeSelectionBase\""
+scalar MobileGNB.gNodeB.cellularNic packetDropInterfaceDown:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, count"
+scalar MobileGNB.gNodeB.cellularNic packetDropInterfaceDown:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, sum(packetBytes)"
+scalar MobileGNB.gNodeB.cellularNic packetDropNoCarrier:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, count"
+scalar MobileGNB.gNodeB.cellularNic packetDropNoCarrier:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, sum(packetBytes)"
+par MobileGNB.gNodeB.pppIf.phys$i.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppIf.ppp.phys$o.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppIf.ppp.upperLayerOut.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppIf.upperLayerIn.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppIf.queue typename "\"inet.queueing.queue.DropTailQueue\""
+par MobileGNB.gNodeB.pppIf.queue displayStringTextFormat "\"contains %p pk (%l) pushed %u\\npulled %o removed %r dropped %d\""
+par MobileGNB.gNodeB.pppIf.queue packetCapacity 10000
+par MobileGNB.gNodeB.pppIf.queue dataCapacity -1b
+attr unit b
+par MobileGNB.gNodeB.pppIf.queue dropperClass "\"inet::queueing::PacketAtCollectionEndDropper\""
+par MobileGNB.gNodeB.pppIf.queue comparatorClass "\"\""
+par MobileGNB.gNodeB.pppIf.queue bufferModule "\"\""
+scalar MobileGNB.gNodeB.pppIf.queue queueLength:last 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode last
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length, last"
+attr unit pk
+scalar MobileGNB.gNodeB.pppIf.queue queueLength:max 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode max
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length, max"
+attr unit pk
+scalar MobileGNB.gNodeB.pppIf.queue queueLength:timeavg 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode timeavg
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length, timeavg"
+attr unit pk
+scalar MobileGNB.gNodeB.pppIf.queue queueBitLength:last 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode last
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length, last"
+attr unit b
+scalar MobileGNB.gNodeB.pppIf.queue queueBitLength:max 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode max
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length, max"
+attr unit b
+scalar MobileGNB.gNodeB.pppIf.queue queueBitLength:timeavg 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode timeavg
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length, timeavg"
+attr unit b
+statistic MobileGNB.gNodeB.pppIf.queue queueingTime:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source queueingTime(packetPulled)
+attr title "queueing times"
+attr unit s
+bin	-inf	0
+bin	0	0
+bin	1	0
+scalar MobileGNB.gNodeB.pppIf.queue outgoingPackets:count 0
+attr recordingmode count
+attr source packetPulled
+attr title "outgoing packets, count"
+attr unit pk
+scalar MobileGNB.gNodeB.pppIf.queue outgoingPacketLengths:sum 0
+attr interpolationmode none
+attr recordingmode sum
+attr source packetLength(packetPulled)
+attr title "outgoing packet lengths, sum"
+attr unit b
+statistic MobileGNB.gNodeB.pppIf.queue outgoingPacketLengths:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source packetLength(packetPulled)
+attr title "outgoing packet lengths"
+attr unit b
+bin	-inf	0
+bin	0	0
+bin	1	0
+statistic MobileGNB.gNodeB.pppIf.queue flowQueueingTime:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source queueingTime(demuxFlow(packetPulled))
+attr title "flow queueing times"
+attr unit s
+bin	-inf	0
+bin	0	0
+bin	1	0
+scalar MobileGNB.gNodeB.pppIf.queue incomingPackets:count 0
+attr recordingmode count
+attr source packetPushStarted
+attr title "incoming packets, count"
+attr unit pk
+scalar MobileGNB.gNodeB.pppIf.queue incomingPacketLengths:sum 0
+attr interpolationmode none
+attr recordingmode sum
+attr source packetLength(packetPushStarted)
+attr title "incoming packet lengths, sum"
+attr unit b
+statistic MobileGNB.gNodeB.pppIf.queue incomingPacketLengths:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source packetLength(packetPushStarted)
+attr title "incoming packet lengths"
+attr unit b
+bin	-inf	0
+bin	0	0
+bin	1	0
+scalar MobileGNB.gNodeB.pppIf.queue droppedPacketsQueueOverflow:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsQueueOverflow(packetDropped)
+attr title "dropped packets: queue overflow, count"
+attr unit pk
+scalar MobileGNB.gNodeB.pppIf.queue droppedPacketLengthsQueueOverflow:sum 0
+attr interpolationmode none
+attr recordingmode sum
+attr source packetLength(packetDropReasonIsQueueOverflow(packetDropped))
+attr title "dropped packet lengths: queue overflow, sum"
+attr unit b
+par MobileGNB.gNodeB.pppIf.ppp typename "\"inet.linklayer.ppp.Ppp\""
+par MobileGNB.gNodeB.pppIf.ppp interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.pppIf.ppp displayStringTextFormat "\"rate: %b\\nsent: %s, rcvd: %r\\nqueue: %q, drop: %d\""
+par MobileGNB.gNodeB.pppIf.ppp sendRawBytes false
+par MobileGNB.gNodeB.pppIf.ppp mtu 4470B
+attr unit B
+par MobileGNB.gNodeB.pppIf.ppp stopOperationExtraTime -1s
+attr unit s
+par MobileGNB.gNodeB.pppIf.ppp stopOperationTimeout 2s
+attr unit s
+scalar MobileGNB.gNodeB.pppIf.ppp transmissionState:timeavg 0
+attr interpolationmode sample-hold
+attr recordingmode timeavg
+attr source transmissionStateChanged
+attr title "tx state, timeavg"
+scalar MobileGNB.gNodeB.pppIf.ppp rxPkOk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source rxPkOk
+attr title "packets received OK, count"
+scalar MobileGNB.gNodeB.pppIf.ppp rxPkOk:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source rxPkOk
+attr title "packets received OK, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppIf.ppp txPk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSentToLower
+attr title "packets transmitted, count"
+scalar MobileGNB.gNodeB.pppIf.ppp txPk:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetSentToLower
+attr title "packets transmitted, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppIf.ppp rcvdPkFromHl:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetReceivedFromUpper
+attr title "packets received from higher layer, count"
+scalar MobileGNB.gNodeB.pppIf.ppp rcvdPkFromHl:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetReceivedFromUpper
+attr title "packets received from higher layer, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppIf.ppp passedUpPk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSentToUpper
+attr title "packets passed to higher layer, count"
+scalar MobileGNB.gNodeB.pppIf.ppp passedUpPk:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetSentToUpper
+attr title "packets passed to higher layer, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppIf.ppp packetDropIncorrectlyReceived:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packet drop: incorrectly received, count"
+scalar MobileGNB.gNodeB.pppIf.ppp packetDropIncorrectlyReceived:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packet drop: incorrectly received, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppIf.ppp packetDropInterfaceDown:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drop: interface down, count"
+scalar MobileGNB.gNodeB.pppIf.ppp packetDropInterfaceDown:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drop: interface down, sum(packetBytes)"
+par MobileGNB.gNodeB.pppIf typename "\"inet.linklayer.ppp.PppInterface\""
+par MobileGNB.gNodeB.pppIf displayStringTextFormat "\"%a (%i)\\n%m\""
+par MobileGNB.gNodeB.pppIf recordPcap false
+par MobileGNB.gNodeB.pppIf numPcapRecorders 0
+par MobileGNB.gNodeB.pppIf interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+scalar MobileGNB.gNodeB.pppIf packetDropInterfaceDown:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, count"
+scalar MobileGNB.gNodeB.pppIf packetDropInterfaceDown:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppIf packetDropNoCarrier:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, count"
+scalar MobileGNB.gNodeB.pppIf packetDropNoCarrier:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, sum(packetBytes)"
+par MobileGNB.gNodeB.pppMEHostIf.phys$i.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppMEHostIf.ppp.phys$o.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppMEHostIf.ppp.upperLayerOut.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppMEHostIf.upperLayerIn.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.pppMEHostIf.queue typename "\"inet.queueing.queue.DropTailQueue\""
+par MobileGNB.gNodeB.pppMEHostIf.queue displayStringTextFormat "\"contains %p pk (%l) pushed %u\\npulled %o removed %r dropped %d\""
+par MobileGNB.gNodeB.pppMEHostIf.queue packetCapacity 10000
+par MobileGNB.gNodeB.pppMEHostIf.queue dataCapacity -1b
+attr unit b
+par MobileGNB.gNodeB.pppMEHostIf.queue dropperClass "\"inet::queueing::PacketAtCollectionEndDropper\""
+par MobileGNB.gNodeB.pppMEHostIf.queue comparatorClass "\"\""
+par MobileGNB.gNodeB.pppMEHostIf.queue bufferModule "\"\""
+scalar MobileGNB.gNodeB.pppMEHostIf.queue queueLength:last 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode last
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length, last"
+attr unit pk
+scalar MobileGNB.gNodeB.pppMEHostIf.queue queueLength:max 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode max
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length, max"
+attr unit pk
+scalar MobileGNB.gNodeB.pppMEHostIf.queue queueLength:timeavg 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode timeavg
+attr source "warmup(atomic(constant0(packetPushEnded) + count(packetPushStarted) - count(packetPulled) - count(packetRemoved) - count(packetDropped)))"
+attr title "queue length, timeavg"
+attr unit pk
+scalar MobileGNB.gNodeB.pppMEHostIf.queue queueBitLength:last 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode last
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length, last"
+attr unit b
+scalar MobileGNB.gNodeB.pppMEHostIf.queue queueBitLength:max 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode max
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length, max"
+attr unit b
+scalar MobileGNB.gNodeB.pppMEHostIf.queue queueBitLength:timeavg 0
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode timeavg
+attr source "warmup(atomic(constant0(packetPushEnded) + sum(packetLength(packetPushStarted)) - sum(packetLength(packetPulled)) - sum(packetLength(packetRemoved)) - sum(packetLength(packetDropped))))"
+attr title "queue bit length, timeavg"
+attr unit b
+statistic MobileGNB.gNodeB.pppMEHostIf.queue queueingTime:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source queueingTime(packetPulled)
+attr title "queueing times"
+attr unit s
+bin	-inf	0
+bin	0	0
+bin	1	0
+scalar MobileGNB.gNodeB.pppMEHostIf.queue outgoingPackets:count 0
+attr recordingmode count
+attr source packetPulled
+attr title "outgoing packets, count"
+attr unit pk
+scalar MobileGNB.gNodeB.pppMEHostIf.queue outgoingPacketLengths:sum 0
+attr interpolationmode none
+attr recordingmode sum
+attr source packetLength(packetPulled)
+attr title "outgoing packet lengths, sum"
+attr unit b
+statistic MobileGNB.gNodeB.pppMEHostIf.queue outgoingPacketLengths:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source packetLength(packetPulled)
+attr title "outgoing packet lengths"
+attr unit b
+bin	-inf	0
+bin	0	0
+bin	1	0
+statistic MobileGNB.gNodeB.pppMEHostIf.queue flowQueueingTime:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source queueingTime(demuxFlow(packetPulled))
+attr title "flow queueing times"
+attr unit s
+bin	-inf	0
+bin	0	0
+bin	1	0
+scalar MobileGNB.gNodeB.pppMEHostIf.queue incomingPackets:count 0
+attr recordingmode count
+attr source packetPushStarted
+attr title "incoming packets, count"
+attr unit pk
+scalar MobileGNB.gNodeB.pppMEHostIf.queue incomingPacketLengths:sum 0
+attr interpolationmode none
+attr recordingmode sum
+attr source packetLength(packetPushStarted)
+attr title "incoming packet lengths, sum"
+attr unit b
+statistic MobileGNB.gNodeB.pppMEHostIf.queue incomingPacketLengths:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr recordingmode histogram
+attr source packetLength(packetPushStarted)
+attr title "incoming packet lengths"
+attr unit b
+bin	-inf	0
+bin	0	0
+bin	1	0
+scalar MobileGNB.gNodeB.pppMEHostIf.queue droppedPacketsQueueOverflow:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsQueueOverflow(packetDropped)
+attr title "dropped packets: queue overflow, count"
+attr unit pk
+scalar MobileGNB.gNodeB.pppMEHostIf.queue droppedPacketLengthsQueueOverflow:sum 0
+attr interpolationmode none
+attr recordingmode sum
+attr source packetLength(packetDropReasonIsQueueOverflow(packetDropped))
+attr title "dropped packet lengths: queue overflow, sum"
+attr unit b
+par MobileGNB.gNodeB.pppMEHostIf.ppp typename "\"inet.linklayer.ppp.Ppp\""
+par MobileGNB.gNodeB.pppMEHostIf.ppp interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.pppMEHostIf.ppp displayStringTextFormat "\"rate: %b\\nsent: %s, rcvd: %r\\nqueue: %q, drop: %d\""
+par MobileGNB.gNodeB.pppMEHostIf.ppp sendRawBytes false
+par MobileGNB.gNodeB.pppMEHostIf.ppp mtu 4470B
+attr unit B
+par MobileGNB.gNodeB.pppMEHostIf.ppp stopOperationExtraTime -1s
+attr unit s
+par MobileGNB.gNodeB.pppMEHostIf.ppp stopOperationTimeout 2s
+attr unit s
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp transmissionState:timeavg 0
+attr interpolationmode sample-hold
+attr recordingmode timeavg
+attr source transmissionStateChanged
+attr title "tx state, timeavg"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp rxPkOk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source rxPkOk
+attr title "packets received OK, count"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp rxPkOk:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source rxPkOk
+attr title "packets received OK, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp txPk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSentToLower
+attr title "packets transmitted, count"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp txPk:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetSentToLower
+attr title "packets transmitted, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp rcvdPkFromHl:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetReceivedFromUpper
+attr title "packets received from higher layer, count"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp rcvdPkFromHl:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetReceivedFromUpper
+attr title "packets received from higher layer, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp passedUpPk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSentToUpper
+attr title "packets passed to higher layer, count"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp passedUpPk:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetSentToUpper
+attr title "packets passed to higher layer, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp packetDropIncorrectlyReceived:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packet drop: incorrectly received, count"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp packetDropIncorrectlyReceived:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packet drop: incorrectly received, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp packetDropInterfaceDown:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drop: interface down, count"
+scalar MobileGNB.gNodeB.pppMEHostIf.ppp packetDropInterfaceDown:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drop: interface down, sum(packetBytes)"
+par MobileGNB.gNodeB.pppMEHostIf typename "\"inet.linklayer.ppp.PppInterface\""
+par MobileGNB.gNodeB.pppMEHostIf displayStringTextFormat "\"%a (%i)\\n%m\""
+par MobileGNB.gNodeB.pppMEHostIf recordPcap false
+par MobileGNB.gNodeB.pppMEHostIf numPcapRecorders 0
+par MobileGNB.gNodeB.pppMEHostIf interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+scalar MobileGNB.gNodeB.pppMEHostIf packetDropInterfaceDown:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, count"
+scalar MobileGNB.gNodeB.pppMEHostIf packetDropInterfaceDown:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsInterfaceDown(packetDropped)
+attr title "packet drops: interface down, sum(packetBytes)"
+scalar MobileGNB.gNodeB.pppMEHostIf packetDropNoCarrier:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, count"
+scalar MobileGNB.gNodeB.pppMEHostIf packetDropNoCarrier:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoCarrier(packetDropped)
+attr title "packet drops: no carrier, sum(packetBytes)"
+par MobileGNB.gNodeB.ipv4.transportIn.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.ipv4.up.out[0].channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.ipv4.lp.out[2].channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.ipv4.ifIn.channel typename "\"ned.IdealChannel\""
+par MobileGNB.gNodeB.ipv4.configurator typename "\"inet.networklayer.configurator.ipv4.Ipv4NodeConfigurator\""
+par MobileGNB.gNodeB.ipv4.configurator interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.ipv4.configurator routingTableModule "\"MobileGNB.gNodeB.ipv4.routingTable\""
+par MobileGNB.gNodeB.ipv4.configurator networkConfiguratorModule "\"configurator\""
+par MobileGNB.gNodeB.ipv4.configurator configureRoutingTable true
+par MobileGNB.gNodeB.ipv4.routingTable typename "\"inet.networklayer.ipv4.Ipv4RoutingTable\""
+par MobileGNB.gNodeB.ipv4.routingTable interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.ipv4.routingTable routerId "\"auto\""
+par MobileGNB.gNodeB.ipv4.routingTable netmaskRoutes "\"*\""
+par MobileGNB.gNodeB.ipv4.routingTable forwarding true
+par MobileGNB.gNodeB.ipv4.routingTable multicastForwarding false
+par MobileGNB.gNodeB.ipv4.routingTable useAdminDist false
+par MobileGNB.gNodeB.ipv4.routingTable routingFile "\"\""
+par MobileGNB.gNodeB.ipv4.natTable typename "\"inet.networklayer.ipv4.Ipv4NatTable\""
+par MobileGNB.gNodeB.ipv4.natTable networkProtocolModule "\"^.ip\""
+par MobileGNB.gNodeB.ipv4.natTable config "<config/> at content:1"
+par MobileGNB.gNodeB.ipv4.up typename "\"inet.common.MessageDispatcher\""
+par MobileGNB.gNodeB.ipv4.up displayStringTextFormat "\"processed %p pk (%l)\""
+par MobileGNB.gNodeB.ipv4.up forwardServiceRegistration true
+par MobileGNB.gNodeB.ipv4.up forwardProtocolRegistration true
+par MobileGNB.gNodeB.ipv4.igmp typename "\"inet.networklayer.ipv4.Igmpv2\""
+par MobileGNB.gNodeB.ipv4.igmp interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.ipv4.igmp routingTableModule "\"MobileGNB.gNodeB.ipv4.routingTable\""
+par MobileGNB.gNodeB.ipv4.igmp crcMode "\"declared\""
+attr enum declared,computed
+par MobileGNB.gNodeB.ipv4.igmp enabled true
+par MobileGNB.gNodeB.ipv4.igmp robustnessVariable 2
+par MobileGNB.gNodeB.ipv4.igmp queryInterval 125s
+attr unit s
+par MobileGNB.gNodeB.ipv4.igmp queryResponseInterval 10s
+attr unit s
+par MobileGNB.gNodeB.ipv4.igmp groupMembershipInterval 260s
+attr unit s
+par MobileGNB.gNodeB.ipv4.igmp otherQuerierPresentInterval 255s
+attr unit s
+par MobileGNB.gNodeB.ipv4.igmp startupQueryInterval 31.25s
+attr unit s
+par MobileGNB.gNodeB.ipv4.igmp startupQueryCount 2
+par MobileGNB.gNodeB.ipv4.igmp lastMemberQueryInterval 1s
+attr unit s
+par MobileGNB.gNodeB.ipv4.igmp lastMemberQueryCount 2
+par MobileGNB.gNodeB.ipv4.igmp unsolicitedReportInterval 10s
+attr unit s
+par MobileGNB.gNodeB.ipv4.icmp typename "\"inet.networklayer.ipv4.Icmp\""
+par MobileGNB.gNodeB.ipv4.icmp interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.ipv4.icmp routingTableModule "\"MobileGNB.gNodeB.ipv4.routingTable\""
+par MobileGNB.gNodeB.ipv4.icmp crcMode "\"declared\""
+attr enum declared,computed
+attr mutable ""
+par MobileGNB.gNodeB.ipv4.icmp quoteLength 8B
+attr mutable ""
+attr unit B
+par MobileGNB.gNodeB.ipv4.mp typename "\"inet.common.MessageDispatcher\""
+par MobileGNB.gNodeB.ipv4.mp displayStringTextFormat "\"processed %p pk (%l)\""
+par MobileGNB.gNodeB.ipv4.mp forwardServiceRegistration true
+par MobileGNB.gNodeB.ipv4.mp forwardProtocolRegistration true
+par MobileGNB.gNodeB.ipv4.ip typename "\"inet.networklayer.ipv4.Ipv4\""
+par MobileGNB.gNodeB.ipv4.ip interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.ipv4.ip routingTableModule "\"MobileGNB.gNodeB.ipv4.routingTable\""
+par MobileGNB.gNodeB.ipv4.ip arpModule "\"MobileGNB.gNodeB.ipv4.arp\""
+par MobileGNB.gNodeB.ipv4.ip icmpModule "\"MobileGNB.gNodeB.ipv4.icmp\""
+par MobileGNB.gNodeB.ipv4.ip crcMode "\"declared\""
+attr enum declared,computed
+par MobileGNB.gNodeB.ipv4.ip timeToLive 32
+par MobileGNB.gNodeB.ipv4.ip multicastTimeToLive 32
+par MobileGNB.gNodeB.ipv4.ip fragmentTimeout 60s
+attr unit s
+par MobileGNB.gNodeB.ipv4.ip limitedBroadcast false
+par MobileGNB.gNodeB.ipv4.ip directBroadcastInterfaces "\"\""
+scalar MobileGNB.gNodeB.ipv4.ip packetDropAddressResolutionFailed:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsAddressResolutionFailed(packetDropped)
+attr title "packet drop: address resolution failed, count"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropAddressResolutionFailed:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsAddressResolutionFailed(packetDropped)
+attr title "packet drop: address resolution failed, sum(packetBytes)"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropHopLimitReached:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsHopLimitReached(packetDropped)
+attr title "packet drop: hop limit reached, count"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropHopLimitReached:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsHopLimitReached(packetDropped)
+attr title "packet drop: hop limit reached, sum(packetBytes)"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropForwardingDisabled:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsForwardingDisabled(packetDropped)
+attr title "packet drop: forwarding disabled, count"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropForwardingDisabled:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsForwardingDisabled(packetDropped)
+attr title "packet drop: forwarding disabled, sum(packetBytes)"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropNoInterfaceFound:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoInterfaceFound(packetDropped)
+attr title "packet drop: no interface found, count"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropNoInterfaceFound:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoInterfaceFound(packetDropped)
+attr title "packet drop: no interface found, sum(packetBytes)"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropNoRouteFound:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoRouteFound(packetDropped)
+attr title "packet drop: no route found, count"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropNoRouteFound:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsNoRouteFound(packetDropped)
+attr title "packet drop: no route found, sum(packetBytes)"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropUndefined:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsUndefined(packetDropped)
+attr title "packet drop: undefined, count"
+scalar MobileGNB.gNodeB.ipv4.ip packetDropUndefined:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetDropReasonIsUndefined(packetDropped)
+attr title "packet drop: undefined, sum(packetBytes)"
+par MobileGNB.gNodeB.ipv4.arp typename "\"inet.networklayer.arp.ipv4.Arp\""
+par MobileGNB.gNodeB.ipv4.arp interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.ipv4.arp routingTableModule "\"MobileGNB.gNodeB.ipv4.routingTable\""
+par MobileGNB.gNodeB.ipv4.arp retryTimeout 1s
+attr unit s
+par MobileGNB.gNodeB.ipv4.arp retryCount 3
+par MobileGNB.gNodeB.ipv4.arp cacheTimeout 120s
+attr unit s
+par MobileGNB.gNodeB.ipv4.arp proxyArpInterfaces "\"*\""
+scalar MobileGNB.gNodeB.ipv4.arp arpResolutionFailed:count 0
+attr recordingmode count
+attr title "ARP failed resolutions, count"
+scalar MobileGNB.gNodeB.ipv4.arp arpResolutionCompleted:count 0
+attr recordingmode count
+attr title "ARP completed resolutions, count"
+scalar MobileGNB.gNodeB.ipv4.arp arpResolutionInitiated:count 0
+attr recordingmode count
+attr title "ARP initiated resolutions, count"
+scalar MobileGNB.gNodeB.ipv4.arp arpReplySent:count 0
+attr recordingmode count
+attr source arpReplySent
+attr title "ARP replies sent, count"
+scalar MobileGNB.gNodeB.ipv4.arp arpReplySent:sum(packetBytes) 0
+attr recordingmode sum(packetBytes)
+attr source arpReplySent
+attr title "ARP replies sent, sum(packetBytes)"
+scalar MobileGNB.gNodeB.ipv4.arp arpRequestSent:count 0
+attr recordingmode count
+attr source arpRequestSent
+attr title "ARP request sent, count"
+scalar MobileGNB.gNodeB.ipv4.arp arpRequestSent:sum(packetBytes) 0
+attr recordingmode sum(packetBytes)
+attr source arpRequestSent
+attr title "ARP request sent, sum(packetBytes)"
+par MobileGNB.gNodeB.ipv4.lp typename "\"inet.common.MessageDispatcher\""
+par MobileGNB.gNodeB.ipv4.lp displayStringTextFormat "\"processed %p pk (%l)\""
+par MobileGNB.gNodeB.ipv4.lp forwardServiceRegistration true
+par MobileGNB.gNodeB.ipv4.lp forwardProtocolRegistration true
+par MobileGNB.gNodeB.ipv4 typename "\"inet.networklayer.ipv4.Ipv4NetworkLayer\""
+par MobileGNB.gNodeB.ipv4 forwarding true
+par MobileGNB.gNodeB.ipv4 multicastForwarding false
+par MobileGNB.gNodeB.ipv4 interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.ipv4 displayStringTextFormat "\"%i\""
+par MobileGNB.gNodeB.udp typename "\"inet.transportlayer.udp.Udp\""
+par MobileGNB.gNodeB.udp interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.udp icmpModule "\"^.ipv4.icmp\""
+par MobileGNB.gNodeB.udp icmpv6Module "\"^.ipv6.icmpv6\""
+par MobileGNB.gNodeB.udp crcMode "\"declared\""
+attr enum disabled,declared,computed
+par MobileGNB.gNodeB.udp defaultMulticastLoop true
+scalar MobileGNB.gNodeB.udp packetReceived:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetReceived
+attr title "packets received, count"
+scalar MobileGNB.gNodeB.udp packetReceived:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetReceived
+attr title "packets received, sum(packetBytes)"
+scalar MobileGNB.gNodeB.udp packetSent:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSent
+attr title "packets sent, count"
+scalar MobileGNB.gNodeB.udp packetSent:sum(packetBytes) 0
+attr interpolationmode none
+attr recordingmode sum(packetBytes)
+attr source packetSent
+attr title "packets sent, sum(packetBytes)"
+scalar MobileGNB.gNodeB.udp passedUpPk:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetSentToUpper
+attr title "packets passed up, count"
+scalar MobileGNB.gNodeB.udp droppedPkWrongPort:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+scalar MobileGNB.gNodeB.udp droppedPkBadChecksum:count 0
+attr interpolationmode none
+attr recordingmode count
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+par MobileGNB.gNodeB.tcp typename "\"inet.transportlayer.tcp.Tcp\""
+par MobileGNB.gNodeB.tcp crcMode "\"declared\""
+attr enum declared,computed
+par MobileGNB.gNodeB.tcp advertisedWindow 7504
+par MobileGNB.gNodeB.tcp delayedAcksEnabled false
+par MobileGNB.gNodeB.tcp nagleEnabled true
+par MobileGNB.gNodeB.tcp limitedTransmitEnabled false
+par MobileGNB.gNodeB.tcp increasedIWEnabled false
+par MobileGNB.gNodeB.tcp sackSupport false
+par MobileGNB.gNodeB.tcp windowScalingSupport false
+par MobileGNB.gNodeB.tcp windowScalingFactor -1
+par MobileGNB.gNodeB.tcp timestampSupport false
+par MobileGNB.gNodeB.tcp mss 536
+par MobileGNB.gNodeB.tcp msl 120s
+attr unit s
+par MobileGNB.gNodeB.tcp tcpAlgorithmClass "\"TcpReno\""
+par MobileGNB.gNodeB.tcp useDataNotification false
+par MobileGNB.gNodeB.tcp dupthresh 3
+par MobileGNB.gNodeB.tcp initialSsthresh 4294967295
+par MobileGNB.gNodeB.tcp stopOperationExtraTime 0s
+attr unit s
+par MobileGNB.gNodeB.tcp stopOperationTimeout 2s
+attr unit s
+par MobileGNB.gNodeB.tcp ecnWillingness false
+par MobileGNB.gNodeB.tcp dctcpGamma 0.0625
+par MobileGNB.gNodeB.sctp typename "\"inet.transportlayer.sctp.Sctp\""
+par MobileGNB.gNodeB.sctp interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.sctp routingTableModule "\"^.ipv4.routingTable\""
+par MobileGNB.gNodeB.sctp crcMode "\"declared\""
+attr enum declared,computed
+par MobileGNB.gNodeB.sctp numGapReports 3
+par MobileGNB.gNodeB.sctp rtoInitial 3s
+attr unit s
+par MobileGNB.gNodeB.sctp rtoMin 1s
+attr unit s
+par MobileGNB.gNodeB.sctp rtoMax 60s
+attr unit s
+par MobileGNB.gNodeB.sctp rtoAlpha 0.125
+par MobileGNB.gNodeB.sctp rtoBeta 0.25
+par MobileGNB.gNodeB.sctp maxBurst 4
+par MobileGNB.gNodeB.sctp maxBurstVariant "\"maxBurst\""
+par MobileGNB.gNodeB.sctp initialWindow 0
+par MobileGNB.gNodeB.sctp assocMaxRetrans 10
+par MobileGNB.gNodeB.sctp pathMaxRetrans 5
+par MobileGNB.gNodeB.sctp maxInitRetrans 8
+par MobileGNB.gNodeB.sctp sackPeriod 0.2s
+attr unit s
+par MobileGNB.gNodeB.sctp sackFrequency 2
+par MobileGNB.gNodeB.sctp reactivatePrimaryPath false
+par MobileGNB.gNodeB.sctp sendQueueLimit 0
+par MobileGNB.gNodeB.sctp validCookieLifetime 10s
+attr unit s
+par MobileGNB.gNodeB.sctp enableHeartbeats true
+par MobileGNB.gNodeB.sctp hbInterval 30s
+attr unit s
+par MobileGNB.gNodeB.sctp sendHeartbeatsOnActivePaths false
+par MobileGNB.gNodeB.sctp nagleEnabled true
+par MobileGNB.gNodeB.sctp naglePoint 1468
+par MobileGNB.gNodeB.sctp fragPoint 1452
+par MobileGNB.gNodeB.sctp fastRecoverySupported true
+par MobileGNB.gNodeB.sctp sctpAlgorithmClass "\"SctpAlg\""
+par MobileGNB.gNodeB.sctp ccModule 0
+par MobileGNB.gNodeB.sctp osbWithHeader false
+par MobileGNB.gNodeB.sctp RTXMethod 0
+par MobileGNB.gNodeB.sctp ssModule 0
+par MobileGNB.gNodeB.sctp arwnd 65535
+par MobileGNB.gNodeB.sctp swsLimit 3000
+par MobileGNB.gNodeB.sctp udpEncapsEnabled false
+par MobileGNB.gNodeB.sctp natFriendly false
+par MobileGNB.gNodeB.sctp bytesToAddPerRcvdChunk 0
+par MobileGNB.gNodeB.sctp bytesToAddPerPeerChunk 0
+par MobileGNB.gNodeB.sctp tellArwnd false
+par MobileGNB.gNodeB.sctp messageAcceptLimit 0
+par MobileGNB.gNodeB.sctp fairStart 0s
+attr unit s
+par MobileGNB.gNodeB.sctp fairStop 0s
+attr unit s
+par MobileGNB.gNodeB.sctp streamsToPaths "\"\""
+par MobileGNB.gNodeB.sctp startEndToEndDelay 0
+par MobileGNB.gNodeB.sctp stopEndToEndDelay 10
+par MobileGNB.gNodeB.sctp throughputInterval 1
+par MobileGNB.gNodeB.sctp auth false
+par MobileGNB.gNodeB.sctp chunks "\"\""
+par MobileGNB.gNodeB.sctp padding false
+par MobileGNB.gNodeB.sctp addIP false
+par MobileGNB.gNodeB.sctp addTime 0s
+attr unit s
+par MobileGNB.gNodeB.sctp addAddress "\"\""
+par MobileGNB.gNodeB.sctp addIpType "\"0\""
+par MobileGNB.gNodeB.sctp packetDrop false
+par MobileGNB.gNodeB.sctp sackNow false
+par MobileGNB.gNodeB.sctp highSpeedCC false
+par MobileGNB.gNodeB.sctp checkSackSeqNumber false
+par MobileGNB.gNodeB.sctp nrSack false
+par MobileGNB.gNodeB.sctp disableReneging false
+par MobileGNB.gNodeB.sctp gapReportLimit 100000000
+par MobileGNB.gNodeB.sctp gapListOptimizationVariant "\"none\""
+par MobileGNB.gNodeB.sctp smartOverfullSACKHandling false
+par MobileGNB.gNodeB.sctp allowQoSTracking false
+par MobileGNB.gNodeB.sctp qosTrackingInterval 1s
+attr unit s
+par MobileGNB.gNodeB.sctp cmtSendAllVariant "\"normal\""
+par MobileGNB.gNodeB.sctp cmtRetransmissionVariant "\"normal\""
+par MobileGNB.gNodeB.sctp cmtCUCVariant "\"normal\""
+par MobileGNB.gNodeB.sctp cmtBufferSplitVariant "\"none\""
+par MobileGNB.gNodeB.sctp cmtBufferSplittingUsesOSB false
+par MobileGNB.gNodeB.sctp cmtUseSFR true
+par MobileGNB.gNodeB.sctp cmtUseDAC true
+par MobileGNB.gNodeB.sctp cmtUseFRC true
+par MobileGNB.gNodeB.sctp cmtSmartT3Reset true
+par MobileGNB.gNodeB.sctp cmtSmartFastRTX true
+par MobileGNB.gNodeB.sctp cmtSmartReneging false
+par MobileGNB.gNodeB.sctp cmtSlowPathRTTUpdate false
+par MobileGNB.gNodeB.sctp cmtChunkReschedulingVariant "\"none\""
+par MobileGNB.gNodeB.sctp cmtChunkReschedulingThreshold 0.5
+par MobileGNB.gNodeB.sctp cmtMovedChunksReduceCwnd true
+par MobileGNB.gNodeB.sctp movedChunkFastRTXFactor 2
+par MobileGNB.gNodeB.sctp cmtSackPath "\"standard\""
+par MobileGNB.gNodeB.sctp strictCwndBooking false
+par MobileGNB.gNodeB.sctp cmtCCVariant "\"off\""
+par MobileGNB.gNodeB.sctp cmtCCPathGroups "\"\""
+par MobileGNB.gNodeB.sctp rpPathBlocking false
+par MobileGNB.gNodeB.sctp rpScaleBlockingTimeout false
+par MobileGNB.gNodeB.sctp rpMinCwnd 1
+par MobileGNB.gNodeB.at typename "\"inet.common.MessageDispatcher\""
+par MobileGNB.gNodeB.at displayStringTextFormat "\"processed %p pk (%l)\""
+par MobileGNB.gNodeB.at forwardServiceRegistration true
+par MobileGNB.gNodeB.at forwardProtocolRegistration true
+par MobileGNB.gNodeB.tn typename "\"inet.common.MessageDispatcher\""
+par MobileGNB.gNodeB.tn displayStringTextFormat "\"processed %p pk (%l)\""
+par MobileGNB.gNodeB.tn forwardServiceRegistration true
+par MobileGNB.gNodeB.tn forwardProtocolRegistration true
+par MobileGNB.gNodeB.nl typename "\"inet.common.MessageDispatcher\""
+par MobileGNB.gNodeB.nl displayStringTextFormat "\"processed %p pk (%l)\""
+par MobileGNB.gNodeB.nl forwardServiceRegistration true
+par MobileGNB.gNodeB.nl forwardProtocolRegistration true
+par MobileGNB.gNodeB.trafficFlowFilter typename "\"simu5g.corenetwork.trafficFlowFilter.TrafficFlowFilter\""
+par MobileGNB.gNodeB.trafficFlowFilter ownerType "\"GNODEB\""
+par MobileGNB.gNodeB.trafficFlowFilter fastForwarding true
+par MobileGNB.gNodeB.gtpUser typename "\"simu5g.corenetwork.gtp.GtpUser\""
+par MobileGNB.gNodeB.gtpUser interfaceTableModule "\"MobileGNB.gNodeB.interfaceTable\""
+par MobileGNB.gNodeB.gtpUser ipOutInterface "\"cellular\""
+par MobileGNB.gNodeB.gtpUser localPort 31
+par MobileGNB.gNodeB.gtpUser tunnelPeerPort 31
+par MobileGNB.gNodeB.gtpUser filter true
+par MobileGNB.gNodeB.gtpUserX2 typename "\"simu5g.corenetwork.gtp.GtpUserX2\""
+par MobileGNB.gNodeB.gtpUserX2 localPort 32
+par MobileGNB.gNodeB.gtpUserX2 tunnelPeerPort 32
+par MobileGNB.gNodeB typename "\"gnbrectilineo.MobileGnb\""
+par MobileGNB.gNodeB nodeType "\"GNODEB\""
+par MobileGNB.gNodeB gateway "\"upf\""
+par MobileGNB.gNodeB masterId 0
+attr mutable ""
+par MobileGNB.gNodeB macNodeId 1
+attr mutable ""
+par MobileGNB.gNodeB macCellId 1
+attr mutable ""
+par MobileGNB.gNodeB txPower 100mw
+attr unit mw
+par MobileGNB.gNodeB nicType "\"NRNicEnb\""
+par MobileGNB.gNodeB hasIpv4 true
+par MobileGNB.gNodeB hasIpv6 false
+par MobileGNB.gNodeB numApps 0
+par MobileGNB.gNodeB numX2Apps 0
+par MobileGNB.gNodeB hasUdp true
+par MobileGNB.gNodeB hasTcp true
+par MobileGNB.gNodeB hasSctp true
+par MobileGNB.gNodeB mecHost "\"\""
+par MobileGNB.gNodeB StatsCollectorType "\"GNodeBStatsCollector\""
+par MobileGNB.gNodeB hasRNISupport false
+par MobileGNB.gNodeB extMeAppsAddress "\"\""
+par MobileGNB.gNodeB mcc "\"001\""
+par MobileGNB.gNodeB mnc "\"01\""
+par MobileGNB typename "\"gnbrectilineo.MobileGNB\""
+
