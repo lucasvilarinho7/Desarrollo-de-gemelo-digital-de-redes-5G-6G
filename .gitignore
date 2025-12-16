@@ -2,13 +2,13 @@
 cache/
 
 # Ignorar datos GADM
-Datos/gadm41_ESP_shp/
+Data/gadm41_ESP_shp/
 
 # Ignorar datos Distritos
-Datos/Distritos
+Data/Districts
 
 # Ignorar datos de barrios
-Datos/Barrios
+Data/Neighborhoods
 
 # Ignorar archivos de datos grandes
 *.csv
