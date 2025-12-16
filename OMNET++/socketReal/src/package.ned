@@ -1,3 +1,0 @@
-package socketreal;
-
-@license(LGPL);
