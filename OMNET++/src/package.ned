@@ -1,0 +1,3 @@
+package gnbrectilineo;
+
+@license(LGPL);

@@ -6,7 +6,7 @@
 
 #include "inet/applications/base/ApplicationBase.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
-#include "tcpclient.h"
+#include "Tcpclient.h"
 
 using namespace inet;
 

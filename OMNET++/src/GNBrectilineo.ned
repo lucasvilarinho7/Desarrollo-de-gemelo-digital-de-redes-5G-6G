@@ -16,7 +16,7 @@ import inet.networklayer.ipv4.RoutingTableRecorder;
 network MobileGNB
 {
     parameters:
-        @display("bgb=3000,3000");
+        @display("bgb=2000,2000");
         // Número de gNodeBs en la red
         int numGnb = default(1);
 
@@ -28,21 +28,21 @@ network MobileGNB
     submodules:
 
         channelControl: LteChannelControl {
-            @display("p=1300,50");
+            @display("p=2300,50");
         }
 
         binder: Binder {
-            @display("p=1300,150");
+            @display("p=2300,250");
         }      
         carrierAggregation: CarrierAggregation {
-            @display("p=1300,250");
+            @display("p=2300,450");
         }
 
         configurator: Ipv4NetworkConfigurator {
-            @display("p=1300,350");
+            @display("p=2300,650");
         }
         routingRecorder: RoutingTableRecorder {
-            @display("p=1300,450;is=s");
+            @display("p=2300,850;is=s");
         }
         upf: Upf {
             @display("p=400,50");

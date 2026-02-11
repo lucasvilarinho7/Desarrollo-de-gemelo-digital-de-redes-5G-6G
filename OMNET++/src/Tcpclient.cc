@@ -3,7 +3,6 @@
 // Usa sockets del sistema operativo para conectarse a servidor externo
 //
 
-#include "tcpclient.h"
 #include "inet/common/INETDefs.h"
 #include <iostream>
 #include <sys/socket.h>
@@ -13,6 +12,7 @@
 #include <fcntl.h>
 #include <cstring>
 #include <errno.h>
+#include "Tcpclient.h"
 
 Define_Module(TcpClient);
 

@@ -7,14 +7,14 @@ module MobileGnb extends gNodeB
     parameters:
         @display("i=device/dron");
         
-        // NO sobreescribir macCellId ni macNodeId aquí
-        // Deben ser configurados en omnetpp.ini
+        // Número de aplicaciones (añadimos CoverageReporter)
+        numApps = default(1);
         
         // Estadísticas de posición
         @statistic[posX](source="xCoord(mobilityPos(mobilityStateChanged))"; record=vector;);
         @statistic[posY](source="yCoord(mobilityPos(mobilityStateChanged))"; record=vector;);
         
-        // Estadísticas de handover y conexiones
-        @statistic[handoverCount](title="Handover Count"; source="handoverCompleted"; record=count,vector;);
+        // Estadísticas de cobertura
         @statistic[connectedUes](title="Connected UEs"; source="numConnectedUes"; record=vector,stats;);
+        @statistic[coverageArea](title="Coverage Area Estimate"; source="coverageAreaEstimate"; record=vector,stats;);
 }

@@ -18,3 +18,7 @@ Data/Neighborhoods
 # Ignorar otros archivos temporales
 *.log
 .DS_Store
+
+Socket/coverage_plots
+
+Socket/coverage_results
