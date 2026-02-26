@@ -6,6 +6,7 @@
 
 #include "inet/applications/base/ApplicationBase.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
+#include "inet/networklayer/common/L3Address.h"
 #include "Tcpclient.h"
 
 using namespace inet;
@@ -13,8 +14,14 @@ using namespace inet;
 class PositionReceiver : public ApplicationBase, public UdpSocket::ICallback
 {
   private:
-    // MODIFICADO: Puntero al cliente TCP para reenvío al servidor externo
+    // Puntero al cliente TCP para reenvío al servidor externo
     TcpClient *tcpClient = nullptr;
+
+    // Handlers por tipo de mensaje CSV
+    void handlePositionMessage(const std::string &payload,
+                               const L3Address &srcAddr, int srcPort);
+    void handleCoverageMessage(const std::string &payload,
+                               const L3Address &srcAddr, int srcPort);
 
   protected:
     // Parámetros

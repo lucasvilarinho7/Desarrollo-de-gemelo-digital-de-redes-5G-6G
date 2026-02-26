@@ -53,6 +53,22 @@ TOPOLOGY_UPDATE_INTERVAL = 15.0
 
 ENABLE_FINAL_REPORT = True
 
+# ── NUEVO: Configuración del test de movimiento ──────────────────────────────
+# Cuando ENABLE_MOVE_TEST es True, al alcanzar MOVE_TEST_DELAY segundos de
+# tiempo de SIMULACIÓN, el gemelo digital enviará un comando MOVE al OMNeT++
+# para reposicionar el gNodeB indicado.
+#
+# gNodeB[0] empieza en (500, 500, 25) según omnetpp.ini PositionTracking.
+# Lo moveremos al centro del mapa (1000, 1000, 25) para ver el efecto.
+ENABLE_MOVE_TEST = True
+MOVE_TEST_DELAY = 30.0             # Segundos de simulación antes del MOVE
+MOVE_TEST_GNB_INDEX = 0            # Qué gNodeB mover
+MOVE_TEST_TARGET_X = 1000.0        # Nueva posición X
+MOVE_TEST_TARGET_Y = 1000.0        # Nueva posición Y
+MOVE_TEST_TARGET_Z = 25.0          # Nueva posición Z
+MOVE_TEST_SPEED = 20.0             # ── NUEVO: Velocidad del dron en m/s ──
+# ─────────────────────────────────────────────────────────────────────────────
+
 conn = None
 addr = None
 server_running = True
@@ -379,30 +395,30 @@ class CoverageHoleDetector:
     def print_summary(self):
         summary = self.get_summary()
         print("\n" + "="*60)
-        print("   🕳️  COVERAGE HOLE DETECTION")
+        print("   COVERAGE HOLE DETECTION")
         print("="*60)
         if summary['total_holes'] == 0:
-            print("  ✅ No coverage holes detected")
+            print("  No coverage holes detected")
             print("="*60 + "\n")
             return
         print(f"  Total regions : {summary['total_holes']}")
         print(f"  Cells affected: {summary['total_cells_affected']}")
-        print(f"  Area affected : {summary['total_area_m2']:.0f} m²")
+        print(f"  Area affected : {summary['total_area_m2']:.0f} m2")
         print("-"*60)
         print("  By severity:")
-        icons = {'critical': '🔴', 'severe': '🟠', 'moderate': '🟡', 'mild': '🟢'}
+        icons = {'critical': '[CRIT]', 'severe': '[SEVR]', 'moderate': '[MODR]', 'mild': '[MILD]'}
         for sev in ['critical', 'severe', 'moderate', 'mild']:
             if sev in summary['by_severity']:
                 d = summary['by_severity'][sev]
                 print(f"    {icons[sev]} {sev:10s}: {d['count']} regions, "
-                      f"{d['cells']} cells, {d['area_m2']:.0f} m²")
+                      f"{d['cells']} cells, {d['area_m2']:.0f} m2")
         print("-"*60)
         print("  Top coverage holes (prioritized):")
         for i, r in enumerate(summary['regions'][:10]):
-            icon = icons.get(r['severity'], '⚪')
+            icon = icons.get(r['severity'], '[????]')
             print(f"    {i+1}. {icon} [{r['severity']}] "
                   f"center=({r['center']['x']:.0f}, {r['center']['y']:.0f}) "
-                  f"area={r['area_m2']:.0f}m² "
+                  f"area={r['area_m2']:.0f}m2 "
                   f"SINR={r['avg_sinr']:.1f}dB "
                   f"({r['num_cells']} cells)")
         print("="*60 + "\n")
@@ -425,6 +441,11 @@ class DigitalTwin:
         self.gnb_data = {}
         self.start_time = None
         self._known_gnbs = set()
+
+        # ── NUEVO: estado del test de movimiento ──
+        self.move_test_sent = False          # True cuando ya se envió el MOVE
+        self.move_commands_log = []          # Historial de todos los comandos enviados
+
         print("[DigitalTwin] Inicializado")
 
     @staticmethod
@@ -553,6 +574,74 @@ class DigitalTwin:
     def detect_coverage_holes(self):
         return self.hole_detector.detect()
 
+    # ── NUEVO: Métodos para enviar comandos MOVE al OMNeT++ ──────────────────
+
+    def send_move_command(self, tcp_conn, gnb_index, x, y, z, speed=20.0):
+        """
+        Envía un comando MOVE al OMNeT++ con velocidad de vuelo.
+
+        El dron NO se teletransporta: vuela gradualmente a 'speed' m/s
+        desde su posición actual hasta (x, y, z).
+
+        Durante el vuelo, SupervisedMobility emite mobilityStateChanged
+        cada 0.1s, actualizando SINR/handover continuamente.
+        """
+        if tcp_conn is None:
+            print("[DT] ERROR: No hay conexion TCP activa para enviar MOVE")
+            return False
+
+        cmd = {
+            "type": "MOVE",
+            "gnb_index": gnb_index,
+            "x": x,
+            "y": y,
+            "z": z,
+            "speed": speed   # ── NUEVO ──
+        }
+        json_str = json.dumps(cmd)
+
+        try:
+            tcp_conn.sendall(json_str.encode("utf-8"))
+
+            # Calcular distancia y ETA desde la posición conocida
+            distance = -1
+            eta = -1
+            for n, d in self.G.nodes(data=True):
+                if (d.get('node_type') == 'gnb' and
+                        d.get('gnb_index') == gnb_index):
+                    dx = x - d['pos_x']
+                    dy = y - d['pos_y']
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    eta = distance / speed if speed > 0 else 0
+                    break
+
+            self.move_commands_log.append({
+                "wall_time": time.time(),
+                "sim_time": self.grid.last_update_time,
+                "command": cmd,
+                "distance": distance,
+                "eta": eta
+            })
+
+            print("\n" + "=" * 60)
+            print("  >>> COMANDO MOVE ENVIADO A OMNET++ <<<")
+            print("=" * 60)
+            print(f"  gNodeB[{gnb_index}] -> ({x}, {y}, {z})")
+            print(f"  Velocidad: {speed} m/s")
+            if distance > 0:
+                print(f"  Distancia: {distance:.1f} m")
+                print(f"  ETA:       {eta:.1f} s de simulacion")
+            print(f"  JSON: {json_str}")
+            print(f"  Sim time: {self.grid.last_update_time:.2f}s")
+            print("=" * 60 + "\n")
+
+            return True
+
+        except Exception as e:
+            print(f"[DT] ERROR enviando MOVE: {e}")
+            return False
+    # ─────────────────────────────────────────────────────────────────────────
+
     def save_graphml(self):
         Path(RESULTS_DIR).mkdir(exist_ok=True)
         fp = Path(RESULTS_DIR) / f"digital_twin_{SESSION_TIMESTAMP}.graphml"
@@ -602,7 +691,9 @@ class DigitalTwin:
             'gnbs': gnb_info,
             'coverage': stats,
             'qos': qos,
-            'coverage_holes': self.hole_detector.get_summary()}
+            'coverage_holes': self.hole_detector.get_summary(),
+            'move_commands': self.move_commands_log  # ── NUEVO
+        }
 
     def print_summary(self):
         report = self.get_summary_report()
@@ -642,7 +733,7 @@ class DigitalTwin:
         print("-"*60)
         print("QoS Distribution (measured cells):")
         for level, data in report['qos'].items():
-            bar = "█" * int(data['percentage'] / 5)
+            bar = "#" * int(data['percentage'] / 5)
             print(f"  {level:15s}: {data['percentage']:6.2f}% "
                   f"({data['cells']:3d} cells) {bar}")
         print("-"*60)
@@ -650,6 +741,20 @@ class DigitalTwin:
         for gnb_id, data in report['coverage']['gnb_distribution'].items():
             print(f"  gNodeB macNodeId={gnb_id}: "
                   f"{data['percentage']:6.2f}% ({data['cells']} cells)")
+
+        if self.move_commands_log:
+            print("-"*60)
+            print(f"MOVE Commands sent: {len(self.move_commands_log)}")
+            for i, entry in enumerate(self.move_commands_log):
+                cmd = entry['command']
+                dist = entry.get('distance', -1)
+                eta = entry.get('eta', -1)
+                print(f"  #{i+1}: gNodeB[{cmd['gnb_index']}] -> "
+                      f"({cmd['x']}, {cmd['y']}, {cmd['z']}) "
+                      f"@ {cmd.get('speed', '?')} m/s "
+                      f"dist={dist:.0f}m ETA={eta:.1f}s "
+                      f"sim_t={entry['sim_time']:.2f}s")
+
         self.hole_detector.print_summary()
 
     def save_report(self):
@@ -664,13 +769,18 @@ class DigitalTwin:
 
 
 # ===============================================================================
-#   PLOT PERIÓDICO: TOPOLOGÍA EN TIEMPO REAL (sin emojis)
+#   PLOT PERIÓDICO: TOPOLOGÍA EN TIEMPO REAL
 # ===============================================================================
 
 def plot_topology(dt):
     fig, ax = plt.subplots(figsize=(14, 12))
     sim_t = f" — t={dt.grid.last_update_time:.1f}s" if dt.grid.last_update_time else ""
-    ax.set_title(f"Gemelo Digital 5G — Topologia{sim_t}",
+
+    # ── MODIFICADO: Indicar en el título si se envió un MOVE ──
+    move_tag = ""
+    if dt.move_commands_log:
+        move_tag = " [MOVE ENVIADO]"
+    ax.set_title(f"Gemelo Digital 5G — Topologia{sim_t}{move_tag}",
                  fontsize=14, fontweight='bold')
 
     G = dt.G
@@ -731,6 +841,32 @@ def plot_topology(dt):
                     bbox=dict(boxstyle='round,pad=0.2', fc='white',
                               ec=color, alpha=0.9, lw=1.5), zorder=10)
 
+    # ── NUEVO: Dibujar posición anterior del drone si se movió ──
+    if dt.move_commands_log:
+        # Marcar la posición original con una X gris
+        # gNodeB[0] estaba en (500, 500) según el .ini
+        for entry in dt.move_commands_log:
+            cmd = entry['command']
+            gnb_idx = cmd['gnb_index']
+            # Buscar posición original en gnb_data (primer registro)
+            for gnb_id, records in dt.gnb_data.items():
+                if records and records[0]['index'] == gnb_idx:
+                    orig_x = records[0]['x']
+                    orig_y = records[0]['y']
+                    # Marca de posición anterior
+                    ax.scatter(orig_x, orig_y, s=400, c='gray', marker='x',
+                               zorder=7, linewidth=3, alpha=0.6)
+                    ax.annotate(f"Pos anterior\ngNB[{gnb_idx}]\n({orig_x:.0f}, {orig_y:.0f})",
+                                (orig_x, orig_y), fontsize=6, ha='center', va='top',
+                                xytext=(0, -20), textcoords='offset points',
+                                color='gray', fontstyle='italic')
+                    # Flecha de la pos anterior a la nueva
+                    ax.annotate("", xy=(cmd['x'], cmd['y']),
+                                xytext=(orig_x, orig_y),
+                                arrowprops=dict(arrowstyle='->', color='blue',
+                                                lw=2, ls='--'))
+                    break
+
     legend = [
         Line2D([0], [0], marker='s', color='w', markerfacecolor='#D32F2F',
                markersize=14, markeredgecolor='black', label='gNodeB'),
@@ -748,6 +884,13 @@ def plot_topology(dt):
         Line2D([0], [0], color='#D50000', lw=2, label='Serving (mala)'),
         Line2D([0], [0], color='#546E7A', lw=1.5, ls='--', label='X2'),
     ]
+    # ── NUEVO: Añadir leyenda del movimiento si aplica ──
+    if dt.move_commands_log:
+        legend.append(Line2D([0], [0], marker='x', color='gray', markersize=10,
+                             markeredgewidth=3, ls='', label='Pos. anterior drone'))
+        legend.append(Line2D([0], [0], color='blue', lw=2, ls='--',
+                             label='Trayectoria MOVE'))
+
     ax.legend(handles=legend, loc='upper right', fontsize=8, framealpha=0.9)
     ax.set_xlim(-50, AREA_SIZE_X + 50)
     ax.set_ylim(AREA_SIZE_Y + 50, -50)
@@ -756,10 +899,19 @@ def plot_topology(dt):
     ax.grid(True, alpha=0.15, ls='--')
 
     st = dt.grid.get_coverage_statistics()
+
+    # ── MODIFICADO: Añadir info del MOVE al cuadro de texto ──
+    move_info = ""
+    if dt.move_commands_log:
+        last_cmd = dt.move_commands_log[-1]['command']
+        move_info = (f"\nMOVE: gNB[{last_cmd['gnb_index']}] -> "
+                     f"({last_cmd['x']:.0f}, {last_cmd['y']:.0f})")
+
     ax.text(0.02, 0.02,
             f"Cobertura: {st['coverage_percentage']:.1f}%\n"
             f"SINR medio: {st['avg_sinr_covered']:.1f} dB\n"
-            f"Medidas: {st['total_measurements']}",
+            f"Medidas: {st['total_measurements']}"
+            f"{move_info}",
             transform=ax.transAxes, fontsize=9, va='bottom',
             bbox=dict(boxstyle='round', fc='wheat', alpha=0.9))
 
@@ -943,11 +1095,27 @@ def process_message(dt, message):
 
 
 # ===============================================================================
-#   SERVIDOR TCP (en thread secundario)
+#   SERVIDOR TCP (en thread secundario) — MODIFICADO CON TEST MOVE
 # ===============================================================================
 
 def tcp_server_thread(dt):
-    """El servidor TCP corre en un hilo secundario. Los plots van en main."""
+    """
+    Servidor TCP con soporte bidireccional para comandos MOVE.
+
+    FLUJO NORMAL (sin MOVE):
+      OMNeT++ envía POS/COVERAGE → Python responde {"status":"ok"} o "ACK"
+
+    FLUJO CON MOVE TEST:
+      1. Los primeros 30s de simulación → respuestas normales
+      2. Al alcanzar sim_time >= MOVE_TEST_DELAY:
+         - En lugar de responder {"status":"ok"}, responde con el JSON MOVE
+         - El TcpClient en OMNeT++ detecta "MOVE" en la respuesta
+         - Lo encola en DroneController → se aplica sobre SupervisedMobility
+      3. Después del MOVE → vuelve a respuestas normales
+
+    El comando MOVE se envía UNA SOLA VEZ como respuesta a un mensaje
+    entrante. Después se sigue respondiendo normalmente.
+    """
     global conn, addr, server_running
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -963,6 +1131,16 @@ def tcp_server_thread(dt):
         print(f"[Servidor] Analisis en tiempo real: {ENABLE_REALTIME_ANALYSIS}")
         print(f"[Servidor] Topologia en tiempo real: cada {TOPOLOGY_UPDATE_INTERVAL}s")
         print(f"[Servidor] Deteccion de Coverage Holes: activada")
+        # ── NUEVO: Mostrar configuración del test MOVE ──
+        if ENABLE_MOVE_TEST:
+            print("-"*60)
+            print(f"[Servidor] >>> TEST MOVE: ACTIVADO <<<")
+            print(f"[Servidor]   Delay: {MOVE_TEST_DELAY}s de simulacion")
+            print(f"[Servidor]   gNodeB[{MOVE_TEST_GNB_INDEX}]: "
+                  f"(500, 500, 25) -> ({MOVE_TEST_TARGET_X}, "
+                  f"{MOVE_TEST_TARGET_Y}, {MOVE_TEST_TARGET_Z})")
+        else:
+            print(f"[Servidor] TEST MOVE: desactivado")
         print("="*60)
 
         while server_running:
@@ -996,16 +1174,86 @@ def tcp_server_thread(dt):
                         if not msg: continue
                         response = process_message(dt, msg)
 
-                    if response:
-                        try:
-                            conn.sendall(json.dumps(response).encode("utf-8"))
-                        except Exception as e:
-                            print(f"[Servidor] Error enviando respuesta: {e}")
+                    # ══════════════════════════════════════════════════
+                    #  DECISIÓN: ¿Respuesta normal o comando MOVE?
+                    #
+                    #  Cada vez que OMNeT++ nos envía un mensaje,
+                    #  nosotros DEBEMOS responder algo.
+                    #  Normalmente respondemos {"status":"ok"}.
+                    #  Pero si toca enviar un MOVE, enviamos el JSON
+                    #  MOVE como respuesta EN SU LUGAR.
+                    #
+                    #  El TcpClient en OMNeT++ lee la respuesta:
+                    #   - Si contiene "MOVE" → lo pasa al DroneController
+                    #   - Si no → lo ignora (comportamiento actual)
+                    # ══════════════════════════════════════════════════
+
+                    should_send_move = False
+
+                    if ENABLE_MOVE_TEST and not dt.move_test_sent:
+                        sim_time = dt.grid.last_update_time
+                        if sim_time is not None and sim_time >= MOVE_TEST_DELAY:
+                            should_send_move = True
+
+                    if should_send_move:
+                        # ── ENVIAR COMANDO MOVE ──
+                        # Buscar posición actual del gNodeB en el grafo
+                        gnb_pos_before = None
+                        for n, d in dt.G.nodes(data=True):
+                            if (d.get('node_type') == 'gnb' and
+                                    d.get('gnb_index') == MOVE_TEST_GNB_INDEX):
+                                gnb_pos_before = (d['pos_x'], d['pos_y'], d['pos_z'])
+                                break
+
+                        if gnb_pos_before:
+                            print("\n" + "*" * 60)
+                            print("  [TEST MOVE] Posicion ANTES del movimiento:")
+                            print(f"    gNodeB[{MOVE_TEST_GNB_INDEX}] esta en "
+                                  f"({gnb_pos_before[0]:.1f}, "
+                                  f"{gnb_pos_before[1]:.1f}, "
+                                  f"{gnb_pos_before[2]:.1f})")
+                            print(f"  [TEST MOVE] Enviando MOVE hacia:")
+                            print(f"    ({MOVE_TEST_TARGET_X}, "
+                                  f"{MOVE_TEST_TARGET_Y}, "
+                                  f"{MOVE_TEST_TARGET_Z})")
+                            print("*" * 60 + "\n")
+                        else:
+                            print("\n[TEST MOVE] gNodeB aun no reportado, "
+                                  "enviando MOVE de todos modos...")
+
+                        success = dt.send_move_command(
+                            conn,
+                            MOVE_TEST_GNB_INDEX,
+                            MOVE_TEST_TARGET_X,
+                            MOVE_TEST_TARGET_Y,
+                            MOVE_TEST_TARGET_Z,
+                            MOVE_TEST_SPEED
+                        )
+
+                        if success:
+                            dt.move_test_sent = True
+                            print("[TEST MOVE] Comando enviado OK. "
+                                  "Esperando confirmacion en COVERAGE...")
+                            print("[TEST MOVE] Los proximos reportes COVERAGE de "
+                                  f"gNodeB[{MOVE_TEST_GNB_INDEX}] deben mostrar "
+                                  f"Pos: ({MOVE_TEST_TARGET_X:.1f}, "
+                                  f"{MOVE_TEST_TARGET_Y:.1f}, "
+                                  f"{MOVE_TEST_TARGET_Z:.1f})")
+
+                        # NO enviar nada más: el MOVE ES la respuesta
+
                     else:
-                        try:
-                            conn.sendall(b"ACK")
-                        except:
-                            break
+                        # ── Respuesta normal (comportamiento original) ──
+                        if response:
+                            try:
+                                conn.sendall(json.dumps(response).encode("utf-8"))
+                            except Exception as e:
+                                print(f"[Servidor] Error enviando respuesta: {e}")
+                        else:
+                            try:
+                                conn.sendall(b"ACK")
+                            except:
+                                break
 
 
 # ===============================================================================

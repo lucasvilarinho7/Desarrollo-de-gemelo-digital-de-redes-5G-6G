@@ -13,6 +13,7 @@
 #include <cstring>
 #include <errno.h>
 #include "Tcpclient.h"
+#include "DroneController.h"
 
 Define_Module(TcpClient);
 
@@ -89,63 +90,59 @@ void TcpClient::handleMessage(cMessage *msg)
             }
         }
 
-        // Si está conectado, enviar ACK cada 2 segundos
-      /*  if (isConnected && realClientFd >= 0) {
-            // Verificar si es momento de enviar (cada 2 segundos)
-            double currentTime = simTime().dbl();
-            static double lastSendTime = 0.0;
 
-            if (currentTime - lastSendTime >= 2.0) {
-                const char *message = "ACK";
-                ssize_t sent = ::send(realClientFd, message, strlen(message), 0);
+        // Leer respuesta del servidor si hay datos
+        char buffer[4096];
+        ssize_t bytesRead = ::recv(realClientFd, buffer, sizeof(buffer) - 1, 0);
 
-                if (sent > 0) {
-                    std::cout << "[Cliente OMNeT++] ACK enviado ("
-                              << currentTime << "s)" << std::endl;
-                    EV_INFO << "ACK enviado al servidor" << endl;
-                    lastSendTime = currentTime;
-                } else if (sent < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
-                    EV_ERROR << "Error enviando ACK: " << strerror(errno) << endl;
-                    std::cerr << "[Cliente] Error enviando: " << strerror(errno) << std::endl;
-                    ::close(realClientFd);
-                    realClientFd = -1;
-                    isConnected = false;
-                    delete msg;
-                    return;
-                }
-            } */
+        if (bytesRead > 0) {
+            buffer[bytesRead] = '\0';
+            std::string receivedMsg(buffer);
 
-            // Leer respuesta del servidor si hay datos
-            char buffer[4096];
-            ssize_t bytesRead = ::recv(realClientFd, buffer, sizeof(buffer) - 1, 0);
+            std::cout << "[Cliente OMNeT++] Servidor responde: "
+                      << receivedMsg << std::endl;
+            EV_INFO << "Respuesta del servidor: " << receivedMsg << endl;
 
-            if (bytesRead > 0) {
-                buffer[bytesRead] = '\0';
-                std::string receivedMsg(buffer);
-
-                std::cout << "[Cliente OMNeT++] Servidor responde: "
-                          << receivedMsg << std::endl;
-                EV_INFO << "Respuesta del servidor: " << receivedMsg << endl;
-
-                if (receivedMsg == "SERVER_CLOSED") {
-                    std::cout << "[Cliente] Servidor cerró la conexión" << std::endl;
-                    EV_WARN << "Servidor cerró la conexión" << endl;
-                    ::close(realClientFd);
-                    realClientFd = -1;
-                    isConnected = false;
-                    delete msg;
-                    return;
-                }
-            } else if (bytesRead == 0) {
-                std::cout << "[Cliente] Servidor desconectado" << std::endl;
-                EV_INFO << "Servidor desconectado" << endl;
+            if (receivedMsg == "SERVER_CLOSED") {
+                std::cout << "[Cliente] Servidor cerró la conexión" << std::endl;
+                EV_WARN << "Servidor cerró la conexión" << endl;
                 ::close(realClientFd);
                 realClientFd = -1;
                 isConnected = false;
                 delete msg;
                 return;
             }
+            // ══════════════════════════════════════════════════
+            //  NUEVO: Procesar comandos MOVE del Gemelo Digital
+            // ══════════════════════════════════════════════════
+            else if (receivedMsg.find("\"MOVE\"") != std::string::npos ||
+                     receivedMsg.find("\"MOVE_BATCH\"") != std::string::npos) {
+
+                DroneController *controller = findDroneController();
+                if (controller) {
+                    controller->enqueueCommand(receivedMsg);
+                    std::cout << "[Cliente] Comando MOVE encolado al DroneController"
+                              << std::endl;
+                } else {
+                    std::cerr << "[Cliente] ERROR: DroneController no encontrado!"
+                              << std::endl;
+                }
+            }
+            else {
+                std::cout << "[Cliente] Mensaje no reconocido: "
+                          << receivedMsg << std::endl;
+            }
+
+        } else if (bytesRead == 0) {
+            std::cout << "[Cliente] Servidor desconectado" << std::endl;
+            EV_INFO << "Servidor desconectado" << endl;
+            ::close(realClientFd);
+            realClientFd = -1;
+            isConnected = false;
+            delete msg;
+            return;
         }
+    }  // cierre del if isConnected (el que estaba comentado)
 
         // Reprogramar el chequeo
         scheduleAt(simTime() + 0.1, msg);
@@ -170,6 +167,17 @@ void TcpClient::sendToServer(const std::string& data)
         realClientFd = -1;
         isConnected = false;
     }
+}
+
+
+DroneController* TcpClient::findDroneController()
+{
+    // El DroneController está a nivel de red (SystemModule)
+    cModule *network = getSimulation()->getSystemModule();
+    if (!network) return nullptr;
+
+    cModule *dc = network->getSubmodule("droneController");
+    return dynamic_cast<DroneController*>(dc);
 }
 
 void TcpClient::finish()

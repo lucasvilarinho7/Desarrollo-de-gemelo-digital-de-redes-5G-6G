@@ -67,6 +67,10 @@ network MobileGNB
             @display("p=500,400;i=device/pocketpc");
         }
         
+          droneController: DroneController {
+            @display("p=2300,1050");
+        }
+        
         bgCell[numBgCells]: BackgroundCell {
             @display("p=800,400;is=vl");
         }
@@ -88,7 +92,9 @@ network MobileGNB
        // for i=0..numGnb-2, for j=i+1..numGnb-1 {
          //   gNodeB[i].x2++ <--> Eth10G <--> gNodeB[j].x2++;
        // }
-              
+        for i=0..numGnb-1 {
+            router.pppg++ <--> Eth10G <--> gNodeB[i].pppMEHost;
+        } 
         
         gNodeB[0].x2++ <--> Eth10G <--> gNodeB[1].x2++;
         

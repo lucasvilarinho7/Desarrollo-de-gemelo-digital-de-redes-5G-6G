@@ -10,7 +10,7 @@
 #include "inet/mobility/contract/IMobility.h"
 #include <omnetpp.h>
 
-// Forward declaration para evitar dependencias circulares
+// Forward declaration
 class Binder;
 
 using namespace inet;
@@ -31,21 +31,21 @@ class PositionSender : public ApplicationBase, public UdpSocket::ICallback, publ
     IMobility *mobility = nullptr;
     cMessage *selfMsg = nullptr;
 
+    // Identificación del UE
+    int ueNodeId = -1;   // nrMacNodeId del UE
+    int ueIndex = -1;    // Índice del array ue[X]
+
     // Referencias a módulos Simu5G para métricas
     cModule *cellularNic = nullptr;
     cModule *nrPhy = nullptr;
-    Binder *binder = nullptr;  // MODIFICADO: Referencia al Binder (sin puntero const)
+    Binder *binder = nullptr;
 
     // Últimos valores de métricas recibidos
     double lastSinr = -999.0;
-  //  double lastRsrp = -999.0;
-  //  double lastRsrq = -999.0;
     int lastMasterNodeId = -1;
 
     // Señales para suscribirse a métricas
     simsignal_t sinrSignal;
-   // simsignal_t rsrpSignal;
-   // simsignal_t rsrqSignal;
 
     // Estadísticas
     int packetsSent = 0;
@@ -61,11 +61,8 @@ class PositionSender : public ApplicationBase, public UdpSocket::ICallback, publ
     // Envío
     void sendPosition();
 
-    // CRÍTICO: Obtener macNodeId del gNodeB conectado ACTUAL desde el Binder
+    // Obtener macNodeId del gNodeB conectado ACTUAL desde el Binder
     int getCurrentMasterNodeId();
-
-    // CRÍTICO: Método auxiliar para obtener el macNodeId desde el Binder
-    // Este método consulta directamente al Binder que mantiene la info actualizada
     int getMacNodeIdFromBinder();
 
     // cListener - Callback para capturar señales
@@ -87,5 +84,3 @@ class PositionSender : public ApplicationBase, public UdpSocket::ICallback, publ
 };
 
 #endif // __POSITIONSENDER_H
-
-

@@ -1,5 +1,6 @@
 // GnbSender.cc
 // Aplicación que envía información periódica del gNodeB al servidor
+// Formato: JSON {"type":"COVERAGE",...}
 
 #include "GnbSender.h"
 #include "inet/common/packet/Packet.h"
@@ -62,7 +63,6 @@ void GnbSender::initialize(int stage)
 
         // ===== OBTENER INFORMACIÓN DEL GNODEB =====
 
-        // Obtener macCellId y macNodeId
         cModule *gnbModule = getParentModule();
 
         if (gnbModule->hasPar("macCellId")) {
@@ -76,7 +76,6 @@ void GnbSender::initialize(int stage)
         const char *fullName = gnbModule->getFullName();
         std::string name(fullName);
 
-        // Extraer el número del nombre "gNodeB[X]"
         size_t start = name.find('[');
         size_t end = name.find(']');
         if (start != std::string::npos && end != std::string::npos) {
@@ -120,34 +119,63 @@ std::vector<int> GnbSender::getConnectedUeIds()
     }
 
     try {
-        // El Binder mantiene un mapa de todos los UEs y sus master nodes
-        // Recorrer todos los UEs registrados y filtrar los conectados a este gNodeB
+        // ============================================================
+        // MÉTODO CORREGIDO: Recorrer TODOS los UEs registrados en la red
+        // y consultar al Binder cuál es su master node actual.
+        //
+        // En Simu5G, los macNodeIds se asignan secuencialmente:
+        //   - gNodeBs: empiezan en 1 (macNodeId=1, 2, ...)
+        //   - UEs NR:  empiezan desde 2048+ (nrMacNodeId)
+        //
+        // El Binder::getNextHop(ueId) devuelve el macNodeId del gNodeB
+        // al que está conectado ese UE. Si el UE no existe o no está
+        // conectado, devuelve 0.
+        // ============================================================
 
-        // Obtener la lista de UEs desde el Binder
-        // Nota: Esto depende de la API interna de Simu5G
-        // Método alternativo: obtener desde la MAC layer
+        // Recorrer los UEs de la simulación directamente desde los módulos
+        cModule *network = getSimulation()->getSystemModule();
+        int numUe = 0;
 
-        cModule *mac = cellularNic->getSubmodule("mac");
-        if (mac) {
-            LteMacEnb *macEnb = dynamic_cast<LteMacEnb*>(mac);
-            if (macEnb) {
-                // Obtener UEs conectados desde la MAC
-                // La MAC mantiene información sobre UEs activos
+        if (network->hasPar("numUe")) {
+            numUe = network->par("numUe").intValue();
+        }
 
-                // Iterar sobre posibles UE IDs (esto puede variar según versión)
-                // En Simu5G, los IDs de UE típicamente empiezan desde un valor base
+        for (int i = 0; i < numUe; i++) {
+            std::string uePath = "ue[" + std::to_string(i) + "]";
+            cModule *ueModule = network->getSubmodule("ue", i);
 
-                for (int ueId = 1024; ueId < 1024 + 100; ueId++) {
-                    MacNodeId masterNode = binder->getNextHop(ueId);
-                    if (masterNode == macNodeId) {
-                        connectedUes.push_back(ueId);
-                    }
-                }
+            if (!ueModule) continue;
+
+            // Obtener el nrMacNodeId del UE (ID NR asignado por Simu5G)
+            MacNodeId ueNrId = 0;
+            if (ueModule->hasPar("nrMacNodeId")) {
+                ueNrId = ueModule->par("nrMacNodeId").intValue();
             }
+            // Fallback: intentar macNodeId
+            if (ueNrId == 0 && ueModule->hasPar("macNodeId")) {
+                ueNrId = ueModule->par("macNodeId").intValue();
+            }
+
+            if (ueNrId == 0) continue;
+
+            // Consultar al Binder: ¿cuál es el next hop (master gNodeB) de este UE?
+            MacNodeId masterNode = binder->getNextHop(ueNrId);
+
+            // Comparar con el macNodeId de ESTE gNodeB
+            if ((int)masterNode == macNodeId) {
+                connectedUes.push_back(ueNrId);
+            }
+        }
+
+        // DEBUG: Log del escaneo
+        if (connectedUes.empty()) {
+            EV_DEBUG << "[GnbSender] gNodeB[" << gnbIndex
+                     << "] No UEs found connected (macNodeId=" << macNodeId << ")" << endl;
         }
 
     } catch (const std::exception& e) {
         EV_ERROR << "Error getting connected UEs: " << e.what() << endl;
+        std::cout << "[GnbSender] ERROR in getConnectedUeIds: " << e.what() << std::endl;
     }
 
     return connectedUes;
@@ -175,7 +203,7 @@ void GnbSender::sendGnbInfo()
     std::vector<int> connectedUes = getConnectedUeIds();
     int numConnected = connectedUes.size();
 
-    // Formato JSON para facilitar el parsing en Python
+    // Formato JSON
     std::ostringstream json;
     json << std::fixed << std::setprecision(3);
     json << "{"
