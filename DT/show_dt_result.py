@@ -73,7 +73,7 @@ def draw_graph(G, pos, node_types):
 
 if __name__ == "__main__":
 
-    graphml_file = "coverage_results/digital_twin_20260218_134439.graphml"
+    graphml_file = "coverage_results/digital_twin_20260226_180441.graphml"
 
     G, pos_raw, node_types = load_graph_with_real_positions(graphml_file)
     pos = invert_y_axis(pos_raw)
