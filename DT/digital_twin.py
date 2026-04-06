@@ -37,7 +37,7 @@ PLOTS_DIR = "./coverage_plots"
 
 AREA_SIZE_X = 2000
 AREA_SIZE_Y = 2000
-GRID_CELL_SIZE = 50
+GRID_CELL_SIZE = 100
 
 SINR_THRESHOLD_COVERAGE = 20
 
@@ -51,7 +51,7 @@ ANALYSIS_INTERVAL = 10.0
 ENABLE_REALTIME_TOPOLOGY = True
 TOPOLOGY_UPDATE_INTERVAL = 15.0
 
-ENABLE_FINAL_REPORT = False
+ENABLE_FINAL_REPORT = True
 
 # ── Configuración de optimización automática de topología ─────────────────────
 # El gemelo digital calcula periódicamente la posición óptima (centroide) de
