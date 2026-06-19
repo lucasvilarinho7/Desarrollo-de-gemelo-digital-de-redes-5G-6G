@@ -1,6 +1,6 @@
 // GnbSender.cc
 // Aplicación que envía información periódica del gNodeB al servidor
-// Formato: JSON {"type":"COVERAGE",...}
+// Formato: JSON {"type":"GNB_Report",...}
 
 #include "GnbSender.h"
 #include "inet/common/packet/Packet.h"
@@ -207,7 +207,7 @@ void GnbSender::sendGnbInfo()
     std::ostringstream json;
     json << std::fixed << std::setprecision(3);
     json << "{"
-         << "\"type\":\"COVERAGE\","
+         << "\"type\":\"GNB_Report\","
          << "\"timestamp\":" << simTime().dbl() << ","
          << "\"gnb_id\":" << macNodeId << ","
          << "\"gnb_index\":" << gnbIndex << ","

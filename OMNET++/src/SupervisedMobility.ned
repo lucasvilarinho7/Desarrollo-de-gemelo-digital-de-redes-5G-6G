@@ -5,7 +5,7 @@
 // y este módulo se encarga de volar paso a paso.
 //
 
-package gnbrectilineo;
+package dronenetwork;
 
 import inet.mobility.base.MovingMobilityBase;
 

@@ -1,4 +1,4 @@
-package gnbrectilineo;
+package dronenetwork;
 
 import simu5g.nodes.NR.gNodeB;
 

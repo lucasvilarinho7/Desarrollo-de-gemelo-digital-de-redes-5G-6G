@@ -1,7 +1,7 @@
 // GnbSender.ned
 // Definición NED para la aplicación GnbSender
 
-package gnbrectilineo;
+package dronenetwork;
 
 simple GnbSender like inet.applications.contract.IApp
 {

@@ -1,11 +1,11 @@
-// PositionReceiver.cc
+// Receiver.cc
 // Servidor UDP que recibe mensajes JSON del UE y del gNodeB
 // y los reenvía por TCP al servidor Python externo
 // Formatos JSON:
-//   UE:     {"type":"POS","ue_id":...,"ue_index":...,...}
-//   gNodeB: {"type":"COVERAGE","gnb_id":...,...}
+//   UE:     {"type":"UE_Report","ue_id":...,"ue_index":...,...}
+//   gNodeB: {"type":"GNB_Report","gnb_id":...,...}
 
-#include "PositionReceiver.h"
+#include "Receiver.h"
 
 #include "inet/common/packet/Packet.h"
 #include "inet/common/packet/chunk/BytesChunk.h"
@@ -18,9 +18,9 @@
 #include <iostream>
 #include <iomanip>
 
-Define_Module(PositionReceiver);
+Define_Module(Receiver);
 
-void PositionReceiver::initialize(int stage)
+void Receiver::initialize(int stage)
 {
     ApplicationBase::initialize(stage);
 
@@ -29,7 +29,7 @@ void PositionReceiver::initialize(int stage)
         packetsReceived = 0;
         packetReceivedSignal = registerSignal("packetReceived");
 
-        EV_INFO << "PositionReceiver initializing on port " << localPort << endl;
+        EV_INFO << "Receiver initializing on port " << localPort << endl;
 
         const char *tcpClientPath = par("tcpClientModule");
         cModule *tcpClientMod = getModuleByPath(tcpClientPath);
@@ -43,25 +43,25 @@ void PositionReceiver::initialize(int stage)
     }
 }
 
-void PositionReceiver::handleStartOperation(LifecycleOperation *operation)
+void Receiver::handleStartOperation(LifecycleOperation *operation)
 {
     socket.setOutputGate(gate("socketOut"));
     socket.setCallback(this);
     socket.bind(localPort);
 
     std::cout << "\n========================================\n";
-    std::cout << "SERVER: Position Receiver Started\n";
+    std::cout << "SERVER: Receiver Started\n";
     std::cout << "SERVER: Listening on port " << localPort << "\n";
     std::cout << "SERVER: All messages in JSON format\n";
     std::cout << "========================================\n" << std::endl;
 }
 
-void PositionReceiver::handleMessageWhenUp(cMessage *msg)
+void Receiver::handleMessageWhenUp(cMessage *msg)
 {
     socket.processMessage(msg);
 }
 
-void PositionReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
+void Receiver::socketDataArrived(UdpSocket *socket, Packet *packet)
 {
     packetsReceived++;
     emit(packetReceivedSignal, packetsReceived);
@@ -88,11 +88,11 @@ void PositionReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
     }
 
     // Detectar tipo por contenido
-    if (payload.find("\"POS\"") != std::string::npos) {
-        handlePositionMessage(payload, srcAddr, srcPort);
+    if (payload.find("\"UE_Report\"") != std::string::npos) {
+        handleUE_ReportMessage(payload, srcAddr, srcPort);
     }
-    else if (payload.find("\"COVERAGE\"") != std::string::npos) {
-        handleCoverageMessage(payload, srcAddr, srcPort);
+    else if (payload.find("\"GNB_Report\"") != std::string::npos) {
+        handleGNB_ReportMessage(payload, srcAddr, srcPort);
     }
     else {
         std::cout << "\n[WARN] Unknown JSON type: " << payload.substr(0, 80) << "\n";
@@ -101,11 +101,11 @@ void PositionReceiver::socketDataArrived(UdpSocket *socket, Packet *packet)
     delete packet;
 }
 
-void PositionReceiver::handlePositionMessage(const std::string &payload,
+void Receiver::handleUE_ReportMessage(const std::string &payload,
                                               const L3Address &srcAddr,
                                               int srcPort)
 {
-    std::cout << "\n════ UE POSITION UPDATE #" << packetsReceived << " ════\n";
+    std::cout << "\n════ UE_Report UPDATE #" << packetsReceived << " ════\n";
     std::cout << "Source : " << srcAddr << ":" << srcPort << "\n";
     std::cout << "JSON   : " << payload << "\n";
 
@@ -113,48 +113,48 @@ void PositionReceiver::handlePositionMessage(const std::string &payload,
     // Reenviar directamente por TCP
     if (tcpClient) {
         tcpClient->sendToServer(payload);
-        std::cout << "Forwarded POS via TCP ✓\n";
+        std::cout << "Forwarded UE_Report via TCP ✓\n";
     }
 }
 
-void PositionReceiver::handleCoverageMessage(const std::string &payload,
+void Receiver::handleGNB_ReportMessage(const std::string &payload,
                                               const L3Address &srcAddr,
                                               int srcPort)
 {
-    std::cout << "\n���═══ gNodeB COVERAGE UPDATE #" << packetsReceived << " ════\n";
+    std::cout << "\n═══ GNB_Report UPDATE #" << packetsReceived << " ════\n";
     std::cout << "Source : " << srcAddr << ":" << srcPort << "\n";
     std::cout << "JSON   : " << payload << "\n";
 
     if (tcpClient) {
         tcpClient->sendToServer(payload);
-        std::cout << "Forwarded COVERAGE via TCP ✓\n";
+        std::cout << "Forwarded GNB_Report via TCP ✓\n";
     } else {
         std::cout << "[WARN] TcpClient not available\n";
     }
 }
 
-void PositionReceiver::socketErrorArrived(UdpSocket *sock, Indication *indication)
+void Receiver::socketErrorArrived(UdpSocket *sock, Indication *indication)
 {
     std::cout << "[UDP ERROR] " << indication->str() << "\n";
     delete indication;
 }
 
-void PositionReceiver::socketClosed(UdpSocket *sock)
+void Receiver::socketClosed(UdpSocket *sock)
 {
     std::cout << "[UDP] Socket closed.\n";
 }
 
-void PositionReceiver::handleStopOperation(LifecycleOperation *)
+void Receiver::handleStopOperation(LifecycleOperation *)
 {
     socket.close();
 }
 
-void PositionReceiver::handleCrashOperation(LifecycleOperation *)
+void Receiver::handleCrashOperation(LifecycleOperation *)
 {
     socket.destroy();
 }
 
-void PositionReceiver::finish()
+void Receiver::finish()
 {
     recordScalar("packetsReceived", packetsReceived);
     std::cout << "Simulation ended. Packets received: " << packetsReceived << "\n";

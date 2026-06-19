@@ -1,8 +1,8 @@
-// PositionSender.h
-// Header para la aplicación PositionSender con métricas Simu5G
+// UESender.h
+// Header para la aplicación UESender con métricas Simu5G
 
-#ifndef __POSITIONSENDER_H
-#define __POSITIONSENDER_H
+#ifndef __UESENDER_H
+#define __UESENDER_H
 
 #include "inet/applications/base/ApplicationBase.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
@@ -16,7 +16,7 @@ class Binder;
 using namespace inet;
 using namespace omnetpp;
 
-class PositionSender : public ApplicationBase, public UdpSocket::ICallback, public cListener
+class UESender : public ApplicationBase, public UdpSocket::ICallback, public cListener
 {
   protected:
     // Parámetros
@@ -58,8 +58,10 @@ class PositionSender : public ApplicationBase, public UdpSocket::ICallback, publ
     virtual void handleMessageWhenUp(cMessage *msg) override;
     virtual void finish() override;
 
+    cModule *myCellularNic = nullptr;
+
     // Envío
-    void sendPosition();
+    void sendUE_Report();
 
     // Obtener macNodeId del gNodeB conectado ACTUAL desde el Binder
     int getCurrentMasterNodeId();
@@ -80,7 +82,7 @@ class PositionSender : public ApplicationBase, public UdpSocket::ICallback, publ
     virtual void socketClosed(UdpSocket *socket) override;
 
   public:
-    virtual ~PositionSender();
+    virtual ~UESender();
 };
 
-#endif // __POSITIONSENDER_H
+#endif // __UESENDER_H

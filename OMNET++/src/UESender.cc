@@ -1,8 +1,9 @@
-// PositionSender.cc
+// UESender.cc
 // Aplicación que envía posición y métricas de red del UE
-// Formato: JSON {"type":"POS","ue_id":...,...}
+// Formato: JSON {"type":"UE_Report","ue_id":...,...}
 
-#include "PositionSender.h"
+#include "UESender.h"
+
 #include "inet/common/packet/Packet.h"
 #include "inet/common/packet/chunk/BytesChunk.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
@@ -11,14 +12,14 @@
 #include <sstream>
 #include <iomanip>
 
-Define_Module(PositionSender);
+Define_Module(UESender);
 
-PositionSender::~PositionSender()
+UESender::~UESender()
 {
     cancelAndDelete(selfMsg);
 }
 
-void PositionSender::initialize(int stage)
+void UESender::initialize(int stage)
 {
     ApplicationBase::initialize(stage);
 
@@ -36,7 +37,13 @@ void PositionSender::initialize(int stage)
         lastSinr = -999.0;
         lastMasterNodeId = -1;
 
-        EV_INFO << "PositionSender initialized - will start at " << startTime << endl;
+        // Modulo de cellularNic de ESTE UE. Se usa para filtrar en receiveSignal:
+        // como la suscripcion a la senal de SINR es GLOBAL (en el systemModule),
+        // cada UESender recibe las emisiones de todos los UEs y debe quedarse SOLO
+        // con las que provienen de su propio cellularNic.
+        myCellularNic = nullptr;
+
+        EV_INFO << "UESender initialized - will start at " << startTime << endl;
     }
     else if (stage == INITSTAGE_APPLICATION_LAYER) {
         mobility = check_and_cast<IMobility *>(
@@ -78,7 +85,7 @@ void PositionSender::initialize(int stage)
             ueIndex = std::stoi(indexStr);
         }
 
-        std::cout << "[PositionSender] UE[" << ueIndex << "] initialized"
+        std::cout << "[UESender] UE[" << ueIndex << "] initialized"
                   << " (nrMacNodeId=" << ueNodeId << ")" << std::endl;
 
         // ===== ACCESO A MÓDULOS SIMU5G =====
@@ -88,30 +95,50 @@ void PositionSender::initialize(int stage)
         if (cellularNic) {
             EV_INFO << "CellularNic found: " << cellularNic->getFullPath() << endl;
 
+            // Guardamos la referencia al cellularNic de ESTE UE para el filtro
+            // por origen de receiveSignal.
+            myCellularNic = cellularNic;
+
             nrPhy = cellularNic->getSubmodule("nrPhy");
             if (!nrPhy)
                 nrPhy = cellularNic->getSubmodule("phy");
 
             if (nrPhy) {
                 EV_INFO << "PHY module found: " << nrPhy->getFullPath() << endl;
-
-                try {
-                    sinrSignal = nrPhy->registerSignal("measuredSinrDl");
-                    getSimulation()->getSystemModule()->subscribe(sinrSignal, this);
-                }
-                catch (const std::exception& e) {
-                    EV_WARN << "Could not subscribe to PHY signals: " << e.what() << endl;
-                    std::cout << "[PositionSender] WARNING: " << e.what() << std::endl;
-                }
             }
             else {
                 EV_WARN << "PHY module not found" << endl;
-                std::cout << "[PositionSender] WARNING: PHY module not found!" << std::endl;
+                std::cout << "[UESender] WARNING: PHY module not found!" << std::endl;
             }
+
+            // ================================================================
+            // SUSCRIPCION A measuredSinrUl  (GLOBAL + FILTRO POR ORIGEN)
+            // ================================================================
+            // La senal measuredSinrUl la EMITE el modulo nrChannelModel (dentro
+            // de cellularNic), no nrPhy. En OMNeT una suscripcion solo recibe las
+            // senales emitidas por el modulo suscrito y las que burbujean desde
+            // sus DESCENDIENTES. Como nrPhy y nrChannelModel son hermanos (ambos
+            // cuelgan de cellularNic), suscribirse a nrPhy NO captura la senal:
+            // por eso el SINR salia -999 siempre.
+            //
+            // Solucion robusta: suscribirse en el systemModule (la raiz), que SI
+            // es ancestro de nrChannelModel y por tanto recibe la senal de todos
+            // los UEs. Para que cada UE se quede solo con SU medida, receiveSignal
+            // filtra por origen comprobando que el emisor cuelga de ESTE
+            // cellularNic (ver receiveSignal). Asi cada UE obtiene su SINR de forma
+            // independiente, igual que la posicion.
+            sinrSignal = registerSignal("measuredSinrUl");
+            getSimulation()->getSystemModule()->subscribe(sinrSignal, this);
+
+            std::cout << "[UESender] UE[" << ueIndex
+                      << "] subscribed (global) to measuredSinrUl; "
+                      << "filtrando por cellularNic="
+                      << (myCellularNic ? myCellularNic->getFullPath() : "null")
+                      << std::endl;
         }
         else {
             EV_WARN << "CellularNic not found!" << endl;
-            std::cout << "[PositionSender] WARNING: CellularNic not found!" << std::endl;
+            std::cout << "[UESender] WARNING: CellularNic not found!" << std::endl;
         }
 
         binder = check_and_cast<Binder*>(
@@ -119,34 +146,57 @@ void PositionSender::initialize(int stage)
         );
 
         if (binder) {
-            std::cout << "[PositionSender] Binder found: " << binder->getFullPath() << std::endl;
+            std::cout << "[UESender] Binder found: " << binder->getFullPath() << std::endl;
             EV_INFO << "Binder module found" << endl;
         } else {
-            std::cout << "[PositionSender] ERROR: Binder not found!" << std::endl;
-            throw cRuntimeError("PositionSender: Binder module is required but not found");
+            std::cout << "[UESender] ERROR: Binder not found!" << std::endl;
+            throw cRuntimeError("UESender: Binder module is required but not found");
         }
 
         scheduleAt(simTime() + startTime, selfMsg);
 
-        std::cout << "[PositionSender] First send at t="
+        std::cout << "[UESender] First send at t="
                   << (simTime() + startTime) << "s" << std::endl;
     }
 }
 
-void PositionSender::receiveSignal(cComponent *source, simsignal_t signalID,
+void UESender::receiveSignal(cComponent *source, simsignal_t signalID,
                                     double value, cObject *details)
 {
-    const char *signalName = getSignalName(signalID);
+    // Solo interesa la senal de SINR UL.
+    if (signalID != sinrSignal)
+        return;
 
-    if (strcmp(signalName, "measuredSinrDl") == 0) {
-        lastSinr = value;
+    // ------------------------------------------------------------------
+    // FILTRO POR ORIGEN
+    // ------------------------------------------------------------------
+    // La suscripcion es global (systemModule), por lo que aqui llegan las
+    // emisiones de measuredSinrUl de TODOS los UEs. Nos quedamos unicamente con
+    // las que provienen del cellularNic de ESTE UE: recorremos la cadena de
+    // ancestros del modulo emisor y comprobamos que pasa por nuestro
+    // myCellularNic. Asi cada UE captura su propio SINR de forma independiente y
+    // se evita que el valor de un UE contamine al de otro (causa de que antes
+    // todos reportaran el mismo SINR).
+    if (myCellularNic != nullptr) {
+        cModule *srcModule = dynamic_cast<cModule *>(source);
+        bool belongsToThisUe = false;
+        for (cModule *m = srcModule; m != nullptr; m = m->getParentModule()) {
+            if (m == myCellularNic) {
+                belongsToThisUe = true;
+                break;
+            }
+        }
+        if (!belongsToThisUe)
+            return;   // Emision de otro UE: se ignora.
     }
+
+    lastSinr = value;
 }
 
-int PositionSender::getMacNodeIdFromBinder()
+int UESender::getMacNodeIdFromBinder()
 {
     if (!binder) {
-        std::cout << "[PositionSender] ERROR: Binder reference is null" << std::endl;
+        std::cout << "[UESender] ERROR: Binder reference is null" << std::endl;
         return -1;
     }
 
@@ -164,28 +214,28 @@ int PositionSender::getMacNodeIdFromBinder()
 
         MacNodeId masterNodeId = binder->getNextHop(ueId);
 
-        std::cout << "[PositionSender] UE[" << ueIndex << "] ID: " << ueId
+        std::cout << "[UESender] UE[" << ueIndex << "] ID: " << ueId
                   << " → Master Node: " << masterNodeId << std::endl;
 
         return masterNodeId;
 
     } catch (const std::exception& e) {
         EV_ERROR << "Exception in getMacNodeIdFromBinder: " << e.what() << endl;
-        std::cout << "[PositionSender] Exception: " << e.what() << std::endl;
+        std::cout << "[UESender] Exception: " << e.what() << std::endl;
     }
 
     return -1;
 }
 
-int PositionSender::getCurrentMasterNodeId()
+int UESender::getCurrentMasterNodeId()
 {
     return getMacNodeIdFromBinder();
 }
 
-void PositionSender::handleMessageWhenUp(cMessage *msg)
+void UESender::handleMessageWhenUp(cMessage *msg)
 {
     if (msg == selfMsg) {
-        sendPosition();
+        sendUE_Report();
         scheduleAt(simTime() + sendInterval, selfMsg);
     }
     else {
@@ -193,7 +243,7 @@ void PositionSender::handleMessageWhenUp(cMessage *msg)
     }
 }
 
-void PositionSender::sendPosition()
+void UESender::sendUE_Report()
 {
     Coord pos = mobility->getCurrentPosition();
 
@@ -203,7 +253,7 @@ void PositionSender::sendPosition()
     std::ostringstream json;
     json << std::fixed << std::setprecision(3);
     json << "{"
-         << "\"type\":\"POS\","
+         << "\"type\":\"UE_Report\","
          << "\"ue_id\":" << ueNodeId << ","
          << "\"ue_index\":" << ueIndex << ","
          << "\"timestamp\":" << simTime().dbl() << ","
@@ -220,7 +270,7 @@ void PositionSender::sendPosition()
 
     std::string data = json.str();
 
-    auto packet = new Packet("PositionPacket");
+    auto packet = new Packet("UE_ReportPacket");
     auto payload = makeShared<BytesChunk>(
         (const uint8_t*)data.c_str(),
         data.size()
@@ -239,42 +289,42 @@ void PositionSender::sendPosition()
     std::cout << "  Connected  : gNodeB[" << (lastMasterNodeId - 1) << "] (macNodeId=" << lastMasterNodeId << ")" << std::endl;
     std::cout << "└────────────────────────────────────────┘\n" << std::endl;
 
-    EV_INFO << "Position sent: (" << pos.x << "," << pos.y << "," << pos.z << ")"
+    EV_INFO << "UE_Report sent: (" << pos.x << "," << pos.y << "," << pos.z << ")"
             << " SINR=" << lastSinr << " macNodeId=" << lastMasterNodeId << endl;
 }
 
-void PositionSender::handleStartOperation(LifecycleOperation *operation)
+void UESender::handleStartOperation(LifecycleOperation *operation)
 {
-    EV_INFO << "PositionSender started" << endl;
+    EV_INFO << "UESender started" << endl;
 }
 
-void PositionSender::handleStopOperation(LifecycleOperation *operation)
+void UESender::handleStopOperation(LifecycleOperation *operation)
 {
     cancelEvent(selfMsg);
     socket.close();
 }
 
-void PositionSender::handleCrashOperation(LifecycleOperation *operation)
+void UESender::handleCrashOperation(LifecycleOperation *operation)
 {
     cancelEvent(selfMsg);
     socket.destroy();
 }
 
-void PositionSender::socketDataArrived(UdpSocket *socket, Packet *packet)
+void UESender::socketDataArrived(UdpSocket *socket, Packet *packet)
 {
     delete packet;
 }
 
-void PositionSender::socketErrorArrived(UdpSocket *socket, Indication *indication)
+void UESender::socketErrorArrived(UdpSocket *socket, Indication *indication)
 {
     delete indication;
 }
 
-void PositionSender::socketClosed(UdpSocket *socket)
+void UESender::socketClosed(UdpSocket *socket)
 {
 }
 
-void PositionSender::finish()
+void UESender::finish()
 {
     recordScalar("packetsSent", packetsSent);
     ApplicationBase::finish();

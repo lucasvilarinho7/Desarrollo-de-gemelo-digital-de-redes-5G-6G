@@ -4,7 +4,7 @@
 // la posición de los gNodeB móviles (drones) en tiempo real.
 //
 
-package gnbrectilineo;
+package dronenetwork;
 
 simple DroneController
 {

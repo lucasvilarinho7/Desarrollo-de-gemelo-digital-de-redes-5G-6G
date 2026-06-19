@@ -1,8 +1,8 @@
-package gnbrectilineo;
+package dronenetwork;
 
 import inet.applications.contract.IApp;
 
-simple PositionReceiver like inet.applications.contract.IApp
+simple Receiver like inet.applications.contract.IApp
 {
     parameters:
         int localPort = default(5001);

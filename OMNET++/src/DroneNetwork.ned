@@ -1,4 +1,4 @@
-package gnbrectilineo;
+package dronenetwork;
 
 import simu5g.nodes.NR.gNodeB;
 import simu5g.world.radio.LteChannelControl;
@@ -13,7 +13,7 @@ import simu5g.nodes.Upf;
 import simu5g.nodes.backgroundCell.BackgroundCell;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 
-network MobileGNB
+network DroneNetwork
 {
     parameters:
         @display("bgb=2000,2000");
@@ -32,70 +32,53 @@ network MobileGNB
         }
 
         binder: Binder {
-            @display("p=2300,250");
-        }      
+            @display("p=2300,275");
+        }
         carrierAggregation: CarrierAggregation {
-            @display("p=2300,450");
+            @display("p=2300,500");
         }
 
         configurator: Ipv4NetworkConfigurator {
-            @display("p=2300,650");
+            @display("p=2300,725");
         }
-        routingRecorder: RoutingTableRecorder {
-            @display("p=2300,850;is=s");
+        //routingRecorder: RoutingTableRecorder {
+        //    @display("p=2300,925;is=s");
+        //}
+        droneController: DroneController {
+            @display("p=2300,1125");
         }
         upf: Upf {
-            @display("p=400,50");
+            @display("p=400,-150");
         }
-
-        // Router para conectar con el core network
         router: Router {
-            @display("p=700,50");
+            @display("p=700,-150");
         }
-
-        // Servidor para generar tráfico
         server: StandardHost {
-            @display("p=1000,50;i=device/server");
+            @display("p=1000,-150;i=device/server");
         }
-		
-		// Array de gNodeBs móviles
         gNodeB[numGnb]: MobileGnb {
             @display("p=300,200;i=device/dron");
         }
-        // Array de User Equipment
         ue[numUe]: MobileUE {
             @display("p=500,400;i=device/pocketpc");
         }
-        
-          droneController: DroneController {
-            @display("p=2300,1050");
-        }
-        
-        bgCell[numBgCells]: BackgroundCell {
-            @display("p=800,400;is=vl");
-        }
+       // bgCell[numBgCells]: BackgroundCell {
+        //    @display("p=800,400;is=vl");
+       // }
 
     connections allowunconnected:
 
-        // Conexión del servidor al router
         server.pppg++ <--> Eth10G <--> router.pppg++;
         router.pppg++ <--> Eth10G <--> upf.filterGate;
 
-        // Conexiones de gNodeBs al UPF (backhaul - usando array ppp[])
         for i=0..numGnb-1 {
             upf.pppg++ <--> Eth10G <--> gNodeB[i].ppp;
         }
-        
-        // CONEXIONES X2 CORREGIDAS: Malla completa entre todos los gNodeBs
-        // Para 2 gNodeBs: gNodeB[0] <--> gNodeB[1]
-        // Para N gNodeBs: cada par (i,j) donde i < j
-       // for i=0..numGnb-2, for j=i+1..numGnb-1 {
-         //   gNodeB[i].x2++ <--> Eth10G <--> gNodeB[j].x2++;
-       // }
         for i=0..numGnb-1 {
             router.pppg++ <--> Eth10G <--> gNodeB[i].pppMEHost;
-        } 
-        
+        }
+
         gNodeB[0].x2++ <--> Eth10G <--> gNodeB[1].x2++;
-        
+        gNodeB[0].x2++ <--> Eth10G <--> gNodeB[2].x2++;
+        gNodeB[1].x2++ <--> Eth10G <--> gNodeB[2].x2++;
 }

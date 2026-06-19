@@ -1,8 +1,8 @@
-// PositionReceiver.h
-// Header para la aplicación PositionReceiver
+// Receiver.h
+// Header para la aplicación Receiver
 
-#ifndef __POSITIONRECEIVER_H
-#define __POSITIONRECEIVER_H
+#ifndef __RECEIVER_H
+#define __RECEIVER_H
 
 #include "inet/applications/base/ApplicationBase.h"
 #include "inet/transportlayer/contract/udp/UdpSocket.h"
@@ -11,16 +11,16 @@
 
 using namespace inet;
 
-class PositionReceiver : public ApplicationBase, public UdpSocket::ICallback
+class Receiver : public ApplicationBase, public UdpSocket::ICallback
 {
   private:
     // Puntero al cliente TCP para reenvío al servidor externo
     TcpClient *tcpClient = nullptr;
 
     // Handlers por tipo de mensaje CSV
-    void handlePositionMessage(const std::string &payload,
+    void handleUE_ReportMessage(const std::string &payload,
                                const L3Address &srcAddr, int srcPort);
-    void handleCoverageMessage(const std::string &payload,
+    void handleGNB_ReportMessage(const std::string &payload,
                                const L3Address &srcAddr, int srcPort);
 
   protected:
@@ -52,4 +52,4 @@ class PositionReceiver : public ApplicationBase, public UdpSocket::ICallback
     virtual void handleCrashOperation(LifecycleOperation *operation) override;
 };
 
-#endif // __POSITIONRECEIVER_H
+#endif // __RECEIVER_H

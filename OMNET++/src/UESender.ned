@@ -1,9 +1,9 @@
-// PositionSender.ned
-// Definición NED para la aplicación PositionSender
+// UESender.ned
+// Definición NED para la aplicación UESender
 
-package gnbrectilineo;
+package dronenetwork;
 
-simple PositionSender like inet.applications.contract.IApp
+simple UESender like inet.applications.contract.IApp
 {
     parameters:
         int localPort = default(-1);  // Puerto local (aleatorio si -1)

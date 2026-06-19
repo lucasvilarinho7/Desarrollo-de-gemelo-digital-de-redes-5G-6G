@@ -5,7 +5,7 @@
 ===============================================================================
   Autor: Lucas Vilarino
   Proyecto: TFM MUIT - UPM
-  Algoritmo de reposicionamiento: K-Means ponderado por SINR
+  Algoritmo de reposicionamiento: Centroide ponderado por SINR
 ===============================================================================
 """
 
@@ -108,16 +108,13 @@ class CoverageGrid:
         uncovered_cells = total_cells - covered_cells
         measured_cells = np.sum(self.measurement_count > 0)
         unmeasured_cells = total_cells - measured_cells
-        # SINR promedio calculado sobre las celdas MEDIDAS (no solo las cubiertas),
-        # de modo que las zonas degradadas tambien contribuyen y el valor refleja
-        # la calidad real experimentada por los UEs en sus trayectorias.
-        measured_sinr_values = self.sinr_map[self.measurement_count > 0]
-        if len(measured_sinr_values) > 0:
-            avg_sinr_measured = np.mean(measured_sinr_values)
-            min_sinr_measured = np.min(measured_sinr_values)
-            max_sinr_measured = np.max(measured_sinr_values)
+        covered_sinr_values = self.sinr_map[self.coverage_map == 1]
+        if len(covered_sinr_values) > 0:
+            avg_sinr_covered = np.mean(covered_sinr_values)
+            min_sinr_covered = np.min(covered_sinr_values)
+            max_sinr_covered = np.max(covered_sinr_values)
         else:
-            avg_sinr_measured = min_sinr_measured = max_sinr_measured = -999
+            avg_sinr_covered = min_sinr_covered = max_sinr_covered = -999
         gnb_distribution = {}
         for gnb_id in np.unique(self.cell_id_map):
             if gnb_id >= 0:
@@ -134,9 +131,9 @@ class CoverageGrid:
             'measured_cells': int(measured_cells),
             'unmeasured_cells': int(unmeasured_cells),
             'measurement_percentage': (measured_cells / total_cells) * 100,
-            'avg_sinr_measured': float(avg_sinr_measured),
-            'min_sinr_measured': float(min_sinr_measured),
-            'max_sinr_measured': float(max_sinr_measured),
+            'avg_sinr_covered': float(avg_sinr_covered),
+            'min_sinr_covered': float(min_sinr_covered),
+            'max_sinr_covered': float(max_sinr_covered),
             'total_measurements': int(np.sum(self.measurement_count)),
             'gnb_distribution': gnb_distribution,
             'last_update': self.last_update_time
@@ -404,28 +401,23 @@ class CoverageHoleDetector:
 
 
 # ===============================================================================
-#   CONFIGURACION DEL ALGORITMO DE REPOSICIONAMIENTO: K-MEANS PONDERADO POR SINR
+#   CONFIGURACION DEL ALGORITMO DE REPOSICIONAMIENTO: CENTROIDE PONDERADO POR SINR
 # ===============================================================================
-# El gemelo digital agrupa a todos los UEs mediante K-Means ponderado por la
-# severidad de su SINR (mas peso a las zonas peor cubiertas) y asigna cada
-# gNodeB al centro del cluster mas cercano, repartiendo las estaciones de forma
-# global en lugar de puramente reactiva.
+# El gemelo digital reubica cada gNodeB hacia el centroide de los UEs que sirve,
+# ponderando cada UE por la inversa de su SINR, de modo que los usuarios peor
+# servidos atraen mas la estacion hacia las zonas de cobertura degradada.
 
-OPTIMIZER_NAME = "K-Means ponderado por SINR"
+OPTIMIZER_NAME = "Centroide ponderado por SINR"
 
 ENABLE_TOPOLOGY_OPTIMIZATION = True
 OPTIMIZATION_INTERVAL = 10.0        # Segundos de simulacion entre optimizaciones
 OPTIMIZATION_MIN_DISTANCE = 50.0    # Distancia minima (m) para enviar MOVE
 OPTIMIZATION_SPEED = 20.0           # Velocidad de vuelo del dron (m/s)
-OPTIMIZATION_MIN_UES = 1            # Minimo de UEs para considerar optimizacion
+OPTIMIZATION_MIN_UES = 1            # Minimo de UEs servidos para optimizar
 
-# Parametros K-Means
-KMEANS_MAX_ITER = 100
-KMEANS_N_INIT = 10
-KMEANS_RANDOM_STATE = 42
-KMEANS_MIN_POINTS = 3
-KMEANS_REPLAN_HYSTERESIS_M = 30.0   # Evita micro-movimientos / oscilaciones
-KMEANS_MAX_MOVE_PER_CYCLE = 300.0   # Limita la distancia por ciclo (estabilidad)
+# Constante de regularizacion para evitar division por cero al invertir el SINR.
+# Se aplica sobre el SINR en escala lineal (no en dB).
+SINR_WEIGHT_EPS = 1e-3
 
 
 # ===============================================================================
@@ -633,143 +625,72 @@ class DigitalTwin:
             return False
 
     # ======================================================================
-    #   ALGORITMO DE REPOSICIONAMIENTO: K-MEANS PONDERADO POR SINR
+    #   ALGORITMO DE REPOSICIONAMIENTO: CENTROIDE PONDERADO POR SINR
     # ======================================================================
     @staticmethod
-    def _sinr_priority_weight(sinr):
-        """Peso por severidad: peor SINR => mayor peso => mas prioridad."""
-        if sinr < -10:
-            return 5.0   # critico
-        elif sinr < 0:
-            return 4.0   # severo
-        elif sinr < 13:
-            return 2.8   # moderado
-        elif sinr < 20:
-            return 1.6   # leve
-        else:
-            return 0.5   # bien cubierto
+    def _inverse_sinr_weight(sinr_db):
+        """
+        Peso = 1 / max(SINR_lineal, eps).
 
-    def _collect_weighted_ue_points(self):
-        """Dataset de clustering: X = posiciones (x, y) de UEs, W = pesos por SINR."""
-        pts, wts = [], []
-        for _, nd in self.G.nodes(data=True):
-            if nd.get('node_type') != 'ue':
-                continue
-            x, y = nd.get('pos_x'), nd.get('pos_y')
-            if x is None or y is None:
-                continue
-            pts.append([float(x), float(y)])
-            wts.append(float(self._sinr_priority_weight(float(nd.get('sinr', -999)))))
-        if not pts:
-            return np.empty((0, 2)), np.empty((0,))
-        return np.array(pts, dtype=float), np.array(wts, dtype=float)
-
-    def _get_mobile_gnbs(self):
-        """En este escenario todas las estaciones son moviles."""
-        drones = []
-        for node_name, nd in self.G.nodes(data=True):
-            if nd.get('node_type') != 'gnb':
-                continue
-            drones.append({'node_name': node_name,
-                           'gnb_id': nd.get('gnb_id'),
-                           'gnb_index': nd.get('gnb_index'),
-                           'x': float(nd.get('pos_x', 0.0)),
-                           'y': float(nd.get('pos_y', 0.0)),
-                           'z': float(nd.get('pos_z', 0.0))})
-        return drones
-
-    def _limit_step_towards_target(self, x0, y0, xt, yt, max_step):
-        """Limita el desplazamiento maximo por ciclo para una progresion suave."""
-        dx, dy = xt - x0, yt - y0
-        d = math.sqrt(dx * dx + dy * dy)
-        if d <= max_step or d == 0:
-            return xt, yt
-        ratio = max_step / d
-        return x0 + ratio * dx, y0 + ratio * dy
-
-    def _assign_drones_to_centers_greedy(self, drones, centers):
-        """Asigna cada centroide al dron mas cercano (minima distancia euclidea)."""
-        remaining = drones.copy()
-        assignments = []
-        for c in centers:
-            cx, cy = float(c[0]), float(c[1])
-            if not remaining:
-                break
-            best_i, best_d = None, float('inf')
-            for i, d in enumerate(remaining):
-                dist = self._dist(d['x'], d['y'], cx, cy)
-                if dist < best_d:
-                    best_d, best_i = dist, i
-            chosen = remaining.pop(best_i)
-            assignments.append((chosen, cx, cy, best_d))
-        return assignments
+        El SINR llega en dB y puede ser negativo o nulo, por lo que invertirlo
+        directamente en dB no es valido. Se convierte primero a escala lineal
+        (siempre positiva) y se invierte: cuanto peor es el SINR, mayor es el
+        peso, de modo que los UEs mal cubiertos arrastran el centroide hacia
+        las zonas degradadas.
+        """
+        sinr_lin = 10.0 ** (sinr_db / 10.0)
+        return 1.0 / max(sinr_lin, SINR_WEIGHT_EPS)
 
     def compute_optimal_positions(self):
         """
-        Reposicionamiento por K-Means ponderado por SINR. Agrupa los UEs (mas peso
-        a los peor cubiertos), obtiene K centros con K = numero de gNodeBs, los
-        asigna a las estaciones por minima distancia y aplica histeresis y limite
-        de paso por ciclo para garantizar movimientos estables.
+        Para cada gNodeB calcula el centroide ponderado de los UEs que sirve,
+        donde el peso de cada UE es inversamente proporcional a su SINR. Solo se
+        genera comando si la distancia al centroide supera OPTIMIZATION_MIN_DISTANCE.
         """
         moves = []
 
-        drones = self._get_mobile_gnbs()
-        if not drones:
-            print("[KMEANS] No hay gNodeBs moviles disponibles.")
-            return moves
-
-        X, W = self._collect_weighted_ue_points()
-        n_points = len(X)
-        if n_points < KMEANS_MIN_POINTS:
-            print(f"[KMEANS] Pocos puntos ({n_points}) para clusterizar. Sin movimientos.")
-            return moves
-
-        k = min(len(drones), n_points)
-        if k <= 0:
-            return moves
-
-        try:
-            from sklearn.cluster import KMeans
-        except ImportError:
-            print("[KMEANS] sklearn no disponible. Instala scikit-learn.")
-            return moves
-
-        # Warm start: posiciones actuales de los drones como centros iniciales
-        init_centers = np.array([[d['x'], d['y']] for d in drones[:k]], dtype=float)
-        try:
-            km = KMeans(n_clusters=k,
-                        init=init_centers if len(init_centers) == k else 'k-means++',
-                        n_init=1 if len(init_centers) == k else KMEANS_N_INIT,
-                        max_iter=KMEANS_MAX_ITER,
-                        random_state=KMEANS_RANDOM_STATE)
-            km.fit(X, sample_weight=W)
-            centers = km.cluster_centers_
-        except Exception as e:
-            print(f"[KMEANS] Error ejecutando K-Means: {e}")
-            return moves
-
-        assignments = self._assign_drones_to_centers_greedy(drones, centers)
-
-        for drone, cx, cy, raw_dist in assignments:
-            # Histeresis: ignorar objetivos demasiado proximos
-            min_move_threshold = max(OPTIMIZATION_MIN_DISTANCE, KMEANS_REPLAN_HYSTERESIS_M)
-            if raw_dist < min_move_threshold:
+        # UEs servidos por cada gNodeB (con su SINR para ponderar)
+        gnb_serving_ues = defaultdict(list)
+        for _, nd in self.G.nodes(data=True):
+            if nd.get('node_type') != 'ue':
                 continue
-            # Limitar el salto por ciclo
-            tx, ty = self._limit_step_towards_target(
-                drone['x'], drone['y'], cx, cy, KMEANS_MAX_MOVE_PER_CYCLE)
-            move_dist = self._dist(drone['x'], drone['y'], tx, ty)
+            master_id = nd.get('master_id', -1)
+            if master_id < 0:
+                continue
+            gnb_serving_ues[master_id].append({
+                'x': nd['pos_x'], 'y': nd['pos_y'], 'sinr': nd.get('sinr', -999)})
 
-            moves.append({'gnb_index': drone['gnb_index'],
-                          'x': float(tx), 'y': float(ty), 'z': float(drone['z']),
-                          'speed': OPTIMIZATION_SPEED,
-                          'num_ues': int(n_points),
-                          'distance': float(move_dist),
-                          'distance_to_center': float(raw_dist)})
-            print(f"[KMEANS] gNodeB[{drone['gnb_index']}] "
-                  f"pos=({drone['x']:.1f}, {drone['y']:.1f}) -> "
-                  f"target=({tx:.1f}, {ty:.1f}) "
-                  f"raw_dist={raw_dist:.1f}m move={move_dist:.1f}m")
+        for gnb_node_name in list(self.G.nodes):
+            nd = self.G.nodes[gnb_node_name]
+            if nd.get('node_type') != 'gnb':
+                continue
+
+            gnb_id = nd.get('gnb_id')
+            gnb_index = nd.get('gnb_index')
+            gnb_x, gnb_y, gnb_z = nd['pos_x'], nd['pos_y'], nd['pos_z']
+
+            ues = gnb_serving_ues.get(gnb_id, [])
+            if len(ues) < OPTIMIZATION_MIN_UES:
+                continue
+
+            weights = [self._inverse_sinr_weight(u['sinr']) for u in ues]
+            w_sum = sum(weights)
+            if w_sum <= 0:
+                continue
+
+            centroid_x = sum(w * u['x'] for w, u in zip(weights, ues)) / w_sum
+            centroid_y = sum(w * u['y'] for w, u in zip(weights, ues)) / w_sum
+            dist = self._dist(gnb_x, gnb_y, centroid_x, centroid_y)
+
+            if dist >= OPTIMIZATION_MIN_DISTANCE:
+                moves.append({'gnb_index': gnb_index,
+                              'x': centroid_x, 'y': centroid_y, 'z': gnb_z,
+                              'speed': OPTIMIZATION_SPEED,
+                              'num_ues': len(ues), 'distance': dist})
+                print(f"[W-CENTROID] gNodeB[{gnb_index}] (id={gnb_id}): "
+                      f"pos=({gnb_x:.0f}, {gnb_y:.0f}) -> "
+                      f"centroide_pond=({centroid_x:.0f}, {centroid_y:.0f}) "
+                      f"dist={dist:.0f}m, {len(ues)} UEs")
         return moves
 
     def should_optimize(self):
@@ -1020,9 +941,7 @@ class DigitalTwin:
               f"{report['coverage']['total_cells']}")
         print(f"  Measured cells: {report['coverage']['measured_cells']} "
               f"({report['coverage']['measurement_percentage']:.1f}%)")
-        print(f"  Avg SINR (measured): {report['coverage']['avg_sinr_measured']:.2f} dB "
-              f"[min {report['coverage']['min_sinr_measured']:.2f} / "
-              f"max {report['coverage']['max_sinr_measured']:.2f}]")
+        print(f"  Avg SINR (covered): {report['coverage']['avg_sinr_covered']:.2f} dB")
         print("-"*60)
         print("QoS Distribution (measured cells):")
         for level, data in report['qos'].items():
@@ -1146,7 +1065,7 @@ def plot_topology(dt):
     st = dt.grid.get_coverage_statistics()
     ax.text(0.02, 0.02,
             f"Cobertura: {st['coverage_percentage']:.1f}%\n"
-            f"SINR medio (medido): {st['avg_sinr_measured']:.1f} dB\n"
+            f"SINR medio: {st['avg_sinr_covered']:.1f} dB\n"
             f"Medidas: {st['total_measurements']}",
             transform=ax.transAxes, fontsize=9, va='bottom',
             bbox=dict(boxstyle='round', fc='wheat', alpha=0.9))
@@ -1175,7 +1094,7 @@ def plot_coverage_grid(coverage_grid, title="Coverage Map", save_path=None):
     stats = coverage_grid.get_coverage_statistics()
     textstr = (f"Cobertura: {stats['coverage_percentage']:.1f}%\n"
                f"Celdas cubiertas: {stats['covered_cells']}/{stats['total_cells']}\n"
-               f"SINR promedio (medido): {stats['avg_sinr_measured']:.1f} dB")
+               f"SINR promedio: {stats['avg_sinr_covered']:.1f} dB")
     ax.text(0.02, 0.98, textstr, transform=ax.transAxes, fontsize=11,
             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9))
     plt.tight_layout()

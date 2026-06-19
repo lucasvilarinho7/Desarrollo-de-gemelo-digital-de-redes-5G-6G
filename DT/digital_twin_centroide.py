@@ -3,8 +3,9 @@
 ===============================================================================
   GEMELO DIGITAL DE RED 5G/6G
 ===============================================================================
-  Autor: Lucas Vilariño
+  Autor: Lucas Vilarino
   Proyecto: TFM MUIT - UPM
+  Algoritmo de reposicionamiento: Centroide simple
 ===============================================================================
 """
 
@@ -27,7 +28,7 @@ from matplotlib.colors import ListedColormap
 from datetime import datetime
 from collections import defaultdict
 
-# ================= CONFIGURACIÓN =================
+# ================= CONFIGURACION COMUN =================
 
 HOST = "0.0.0.0"
 PORT = 50000
@@ -53,31 +54,11 @@ TOPOLOGY_UPDATE_INTERVAL = 15.0
 
 ENABLE_FINAL_REPORT = True
 
-# ── Configuración de optimización automática de topología ─────────────────────
-# El gemelo digital calcula periódicamente la posición óptima (centroide) de
-# cada estación respecto a los UEs que sirve y envía comandos MOVE para
-# reposicionar las estaciones hacia esa posición óptima continuamente.
-ENABLE_TOPOLOGY_OPTIMIZATION = True
-OPTIMIZATION_INTERVAL = 10.0        # Segundos de simulación entre optimizaciones
-OPTIMIZATION_MIN_DISTANCE = 50.0    # Distancia mínima (m) para enviar MOVE
-OPTIMIZATION_SPEED = 20.0           # Velocidad de vuelo del dron en m/s
-OPTIMIZATION_MIN_UES = 1            # Mínimo de UEs servidos para optimizar
-# ─────────────────────────────────────────────────────────────────────────────
-
-conn = None
-addr = None
-server_running = True
-digital_twin = None
-
-# Flag para que el hilo principal sepa cuándo dibujar
-topology_plot_requested = False
-final_report_requested = False
-
 SESSION_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
 # ===============================================================================
-#   GRID DE COBERTURA (igual que server_TCP_routes.py)
+#   GRID DE COBERTURA
 # ===============================================================================
 
 class CoverageGrid:
@@ -127,13 +108,16 @@ class CoverageGrid:
         uncovered_cells = total_cells - covered_cells
         measured_cells = np.sum(self.measurement_count > 0)
         unmeasured_cells = total_cells - measured_cells
-        covered_sinr_values = self.sinr_map[self.coverage_map == 1]
-        if len(covered_sinr_values) > 0:
-            avg_sinr_covered = np.mean(covered_sinr_values)
-            min_sinr_covered = np.min(covered_sinr_values)
-            max_sinr_covered = np.max(covered_sinr_values)
+        # SINR promedio calculado sobre las celdas MEDIDAS (no solo las cubiertas),
+        # de modo que las zonas degradadas tambien contribuyen y el valor refleja
+        # la calidad real experimentada por los UEs en sus trayectorias.
+        measured_sinr_values = self.sinr_map[self.measurement_count > 0]
+        if len(measured_sinr_values) > 0:
+            avg_sinr_measured = np.mean(measured_sinr_values)
+            min_sinr_measured = np.min(measured_sinr_values)
+            max_sinr_measured = np.max(measured_sinr_values)
         else:
-            avg_sinr_covered = min_sinr_covered = max_sinr_covered = -999
+            avg_sinr_measured = min_sinr_measured = max_sinr_measured = -999
         gnb_distribution = {}
         for gnb_id in np.unique(self.cell_id_map):
             if gnb_id >= 0:
@@ -150,9 +134,9 @@ class CoverageGrid:
             'measured_cells': int(measured_cells),
             'unmeasured_cells': int(unmeasured_cells),
             'measurement_percentage': (measured_cells / total_cells) * 100,
-            'avg_sinr_covered': float(avg_sinr_covered),
-            'min_sinr_covered': float(min_sinr_covered),
-            'max_sinr_covered': float(max_sinr_covered),
+            'avg_sinr_measured': float(avg_sinr_measured),
+            'min_sinr_measured': float(min_sinr_measured),
+            'max_sinr_measured': float(max_sinr_measured),
             'total_measurements': int(np.sum(self.measurement_count)),
             'gnb_distribution': gnb_distribution,
             'last_update': self.last_update_time
@@ -189,7 +173,7 @@ class CoverageGrid:
 
 
 # ===============================================================================
-#   DETECTOR DE COVERAGE HOLES (igual que server_TCP_routes.py)
+#   DETECTOR DE COVERAGE HOLES (DBSCAN)
 # ===============================================================================
 
 class CoverageHoleDetector:
@@ -420,7 +404,22 @@ class CoverageHoleDetector:
 
 
 # ===============================================================================
-#   GEMELO DIGITAL — Solo gNodeBs y UEs
+#   CONFIGURACION DEL ALGORITMO DE REPOSICIONAMIENTO: CENTROIDE SIMPLE
+# ===============================================================================
+# El gemelo digital reubica cada gNodeB hacia el centroide geometrico de los
+# UEs que tiene asociados, siguiendo a la demanda de forma reactiva.
+
+OPTIMIZER_NAME = "Centroide simple"
+
+ENABLE_TOPOLOGY_OPTIMIZATION = True
+OPTIMIZATION_INTERVAL = 10.0        # Segundos de simulacion entre optimizaciones
+OPTIMIZATION_MIN_DISTANCE = 50.0    # Distancia minima (m) para enviar MOVE
+OPTIMIZATION_SPEED = 20.0           # Velocidad de vuelo del dron (m/s)
+OPTIMIZATION_MIN_UES = 1            # Minimo de UEs servidos para optimizar
+
+
+# ===============================================================================
+#   GEMELO DIGITAL  (servidor TCP integrado en la clase)
 # ===============================================================================
 
 class DigitalTwin:
@@ -437,12 +436,18 @@ class DigitalTwin:
         self.start_time = None
         self._known_gnbs = set()
 
-        # Estado de la optimización de topología
-        self.move_commands_log = []          # Historial de todos los comandos enviados
-        self.last_optimization_sim_time = 0  # Último tiempo de sim en que se optimizó
+        # Estado del reposicionamiento
+        self.move_commands_log = []
+        self.last_optimization_sim_time = 0
+
+        # Estado del servidor TCP (integrado en la clase)
+        self.conn = None
+        self.addr = None
+        self.server_running = True
 
         print("[DigitalTwin] Inicializado")
 
+    # ---------------------------------------------------------------- utilidades
     @staticmethod
     def _sinr_to_qos(sinr):
         if sinr >= 20: return 'Excellent'
@@ -455,10 +460,11 @@ class DigitalTwin:
     def _dist(x1, y1, x2, y2):
         return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
-    def process_ue_message(self, message):
+    # ------------------------------------------------- ingesta de telemetria UE
+    def handleUE_ReportMessage(self, message):
         try:
             data = json.loads(message)
-            if data.get("type") != "POS": return False
+            if data.get("type") != "UE_Report": return False
             ue_id = data.get("ue_id", -1)
             ue_index = data.get("ue_index", -1)
             ts = data.get("timestamp")
@@ -505,7 +511,6 @@ class DigitalTwin:
                             measurements=int(len(records)),
                             last_update=float(ts) if ts else 0.0)
 
-            # Eliminar arista serving anterior y crear la nueva
             old = [(u, v) for u, v in self.G.edges(ue_node)
                    if self.G.edges[u, v].get('link_type') == 'serving']
             self.G.remove_edges_from(old)
@@ -518,10 +523,11 @@ class DigitalTwin:
             print(f"[DT] Error UE: {e}")
             return False
 
-    def process_coverage_message(self, message):
+    # ---------------------------------------------- ingesta de telemetria gNodeB
+    def handleGNB_ReportMessage(self, message):
         try:
             data = json.loads(message)
-            if data.get("type") != "COVERAGE": return False
+            if data.get("type") != "GNB_Report": return False
             gnb_id = data.get("gnb_id")
             gnb_index = data.get("gnb_index")
             ts = data.get("timestamp")
@@ -530,7 +536,7 @@ class DigitalTwin:
             num_conn = data.get("num_connected", 0)
             x, y, z = pos.get("x", 0), pos.get("y", 0), pos.get("z", 0)
 
-            print(f"\n[Servidor] COVERAGE from gNodeB[{gnb_index}] (id={gnb_id})")
+            print(f"\n[Servidor] GNB_Report from gNodeB[{gnb_index}] (id={gnb_id})")
             print(f"  Time: {ts:.2f}s | Pos: ({x:.1f}, {y:.1f}, {z:.1f})")
             print(f"  Connected UEs: {num_conn} {connected if connected else ''}")
 
@@ -542,7 +548,6 @@ class DigitalTwin:
                 'connected_ues': connected, 'num_connected': num_conn})
 
             gnb_node = f"gNB_{gnb_id}"
-            # connected_ues es lista → convertir a string para GraphML
             self.G.add_node(gnb_node,
                             node_type='gnb', gnb_id=int(gnb_id),
                             gnb_index=int(gnb_index),
@@ -563,39 +568,28 @@ class DigitalTwin:
                 self._known_gnbs.add(gnb_id)
             return True
         except Exception as e:
-            print(f"[DT] Error COVERAGE: {e}")
+            print(f"[DT] Error GNB_Report: {e}")
             return False
 
     def detect_coverage_holes(self):
         return self.hole_detector.detect()
 
-
-    def send_move_batch(self, tcp_conn, move_list):
-        """
-        Envía un lote de comandos MOVE al OMNeT++ en un solo mensaje MOVE_BATCH.
-        move_list: lista de dicts con {gnb_index, x, y, z, speed}
-        """
-        if tcp_conn is None:
+    # ----------------------------------------------- envio de comandos a OMNeT++
+    def send_move_batch(self, move_list):
+        if self.conn is None:
             print("[DT] ERROR: No hay conexion TCP activa para enviar MOVE_BATCH")
             return False
-
         if not move_list:
             return False
 
-        cmd = {
-            "type": "MOVE_BATCH",
-            "moves": move_list
-        }
+        cmd = {"type": "MOVE_BATCH", "moves": move_list}
         json_str = json.dumps(cmd)
-
         try:
-            tcp_conn.sendall(json_str.encode("utf-8"))
-
+            self.conn.sendall(json_str.encode("utf-8"))
             for move in move_list:
                 gnb_index = move['gnb_index']
                 x, y, z = move['x'], move['y'], move['z']
                 speed = move.get('speed', OPTIMIZATION_SPEED)
-
                 distance = -1
                 eta = -1
                 for n, d in self.G.nodes(data=True):
@@ -606,20 +600,13 @@ class DigitalTwin:
                         distance = math.sqrt(dx*dx + dy*dy)
                         eta = distance / speed if speed > 0 else 0
                         break
-
                 self.move_commands_log.append({
                     "wall_time": time.time(),
                     "sim_time": self.grid.last_update_time,
-                    "command": {
-                        "type": "MOVE",
-                        "gnb_index": gnb_index,
-                        "x": x, "y": y, "z": z,
-                        "speed": speed
-                    },
-                    "distance": distance,
-                    "eta": eta,
-                    "reason": "topology_optimization"
-                })
+                    "command": {"type": "MOVE", "gnb_index": gnb_index,
+                                "x": x, "y": y, "z": z, "speed": speed},
+                    "distance": distance, "eta": eta,
+                    "reason": "topology_optimization"})
 
             print("\n" + "=" * 60)
             print("  >>> MOVE_BATCH ENVIADO A OMNET++ (OPTIMIZACION) <<<")
@@ -630,37 +617,32 @@ class DigitalTwin:
                       f"@ {move.get('speed', OPTIMIZATION_SPEED)} m/s")
             print(f"  Sim time: {self.grid.last_update_time:.2f}s")
             print("=" * 60 + "\n")
-
             return True
-
         except Exception as e:
             print(f"[DT] ERROR enviando MOVE_BATCH: {e}")
             return False
 
+    # ======================================================================
+    #   ALGORITMO DE REPOSICIONAMIENTO: CENTROIDE SIMPLE
+    # ======================================================================
     def compute_optimal_positions(self):
         """
-        Para cada gNodeB, calcula el centroide de los UEs que está sirviendo.
-        Devuelve una lista de movimientos necesarios.
-        Solo incluye estaciones cuya distancia al centroide supera
-        OPTIMIZATION_MIN_DISTANCE.
+        Para cada gNodeB calcula el centroide geometrico de los UEs que sirve y
+        lo fija como posicion objetivo. Solo se genera comando si la distancia al
+        centroide supera OPTIMIZATION_MIN_DISTANCE (evita micro-movimientos).
         """
         moves = []
 
-        # Recopilar para cada gnb_id los UEs que sirve actualmente
+        # UEs servidos por cada gNodeB (segun master_id)
         gnb_serving_ues = defaultdict(list)
-
-        for n, nd in self.G.nodes(data=True):
+        for _, nd in self.G.nodes(data=True):
             if nd.get('node_type') != 'ue':
                 continue
             master_id = nd.get('master_id', -1)
             if master_id < 0:
                 continue
-            gnb_serving_ues[master_id].append({
-                'x': nd['pos_x'],
-                'y': nd['pos_y']
-            })
+            gnb_serving_ues[master_id].append({'x': nd['pos_x'], 'y': nd['pos_y']})
 
-        # Para cada gNodeB con suficientes UEs, calcular centroide
         for gnb_node_name in list(self.G.nodes):
             nd = self.G.nodes[gnb_node_name]
             if nd.get('node_type') != 'gnb':
@@ -668,50 +650,188 @@ class DigitalTwin:
 
             gnb_id = nd.get('gnb_id')
             gnb_index = nd.get('gnb_index')
-            gnb_x = nd['pos_x']
-            gnb_y = nd['pos_y']
-            gnb_z = nd['pos_z']
+            gnb_x, gnb_y, gnb_z = nd['pos_x'], nd['pos_y'], nd['pos_z']
 
             ues = gnb_serving_ues.get(gnb_id, [])
             if len(ues) < OPTIMIZATION_MIN_UES:
                 continue
 
-            # Centroide de los UEs servidos
             centroid_x = sum(u['x'] for u in ues) / len(ues)
             centroid_y = sum(u['y'] for u in ues) / len(ues)
-
-            # Distancia actual al centroide
             dist = self._dist(gnb_x, gnb_y, centroid_x, centroid_y)
 
             if dist >= OPTIMIZATION_MIN_DISTANCE:
-                moves.append({
-                    'gnb_index': gnb_index,
-                    'x': centroid_x,
-                    'y': centroid_y,
-                    'z': gnb_z,
-                    'speed': OPTIMIZATION_SPEED,
-                    'num_ues': len(ues),
-                    'distance': dist
-                })
-
-                print(f"[OPTIM] gNodeB[{gnb_index}] (id={gnb_id}): "
+                moves.append({'gnb_index': gnb_index,
+                              'x': centroid_x, 'y': centroid_y, 'z': gnb_z,
+                              'speed': OPTIMIZATION_SPEED,
+                              'num_ues': len(ues), 'distance': dist})
+                print(f"[CENTROID] gNodeB[{gnb_index}] (id={gnb_id}): "
                       f"pos=({gnb_x:.0f}, {gnb_y:.0f}) -> "
                       f"centroide=({centroid_x:.0f}, {centroid_y:.0f}) "
                       f"dist={dist:.0f}m, {len(ues)} UEs")
-
         return moves
 
     def should_optimize(self):
-        """Determina si es momento de ejecutar una optimización."""
         if not ENABLE_TOPOLOGY_OPTIMIZATION:
             return False
         sim_time = self.grid.last_update_time
         if sim_time is None:
             return False
-        if sim_time - self.last_optimization_sim_time >= OPTIMIZATION_INTERVAL:
-            return True
-        return False
-         
+        return (sim_time - self.last_optimization_sim_time) >= OPTIMIZATION_INTERVAL
+
+    # ===========================================================================
+    #   SERVIDOR TCP  (integrado en la clase DigitalTwin)
+    # ===========================================================================
+
+    @staticmethod
+    def split_tcp_messages(raw_data):
+        messages = []
+        remaining = raw_data.strip()
+        while remaining:
+            remaining = remaining.strip()
+            if not remaining: break
+            if remaining.startswith('{'):
+                depth = 0
+                for i, ch in enumerate(remaining):
+                    if ch == '{': depth += 1
+                    elif ch == '}':
+                        depth -= 1
+                        if depth == 0:
+                            messages.append(remaining[:i+1])
+                            remaining = remaining[i+1:]
+                            break
+                else:
+                    messages.append(remaining)
+                    remaining = ""
+            else:
+                next_json = remaining.find('{')
+                if next_json > 0:
+                    remaining = remaining[next_json:]
+                else:
+                    break
+        return messages
+
+    def process_message(self, message):
+        try:
+            data = json.loads(message)
+            msg_type = data.get("type")
+            if msg_type == "UE_Report":
+                self.handleUE_ReportMessage(message)
+                sinr = data.get("network", {}).get("sinr")
+                ue_id = data.get("ue_id", "?")
+                ue_index = data.get("ue_index", "?")
+                if sinr is not None:
+                    print(f"[Servidor] UE[{ue_index}] (id={ue_id}) SINR: {sinr:.2f} dB")
+                return {"status": "ok"}
+            elif msg_type == "GNB_Report":
+                self.handleGNB_ReportMessage(message)
+                return {"status": "ok"}
+            else:
+                print(f"[Servidor] Tipo desconocido: {msg_type}")
+                return {"status": "ignored"}
+        except json.JSONDecodeError as e:
+            print(f"[Servidor] JSON invalido: {e}")
+            return {"status": "error", "message": "Invalid JSON"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+    def run_tcp_server(self):
+        """
+        Servidor TCP del gemelo digital. Recibe UE_Report/GNB_Report, actualiza el grafo y,
+        cada OPTIMIZATION_INTERVAL segundos de simulacion, ejecuta el algoritmo de
+        reposicionamiento y devuelve un MOVE_BATCH como respuesta.
+        """
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.settimeout(1.0)
+            s.bind((HOST, PORT))
+            s.listen(1)
+
+            print("="*60)
+            print(f"[Servidor] Escuchando en {HOST}:{PORT}")
+            print(f"[Servidor] Session: {SESSION_TIMESTAMP}")
+            print(f"[Servidor] Algoritmo de reposicionamiento: {OPTIMIZER_NAME}")
+            if ENABLE_TOPOLOGY_OPTIMIZATION:
+                print(f"[Servidor] Optimizacion: cada {OPTIMIZATION_INTERVAL}s sim, "
+                      f"dist_min={OPTIMIZATION_MIN_DISTANCE}m, "
+                      f"speed={OPTIMIZATION_SPEED} m/s")
+            else:
+                print("[Servidor] Optimizacion de topologia DESACTIVADA")
+            print("="*60)
+
+            while self.server_running:
+                try:
+                    self.conn, self.addr = s.accept()
+                except socket.timeout:
+                    continue
+                except OSError:
+                    break
+
+                print(f"[Servidor] Conexion desde {self.addr}")
+                with self.conn:
+                    self.conn.settimeout(1.0)
+                    while self.server_running:
+                        try:
+                            data = self.conn.recv(8192)
+                        except socket.timeout:
+                            continue
+                        except OSError:
+                            break
+                        if not data:
+                            print("[Servidor] Cliente desconectado")
+                            break
+
+                        raw = data.decode("utf-8", errors="replace").strip()
+                        messages = self.split_tcp_messages(raw)
+
+                        response = None
+                        for msg in messages:
+                            msg = msg.strip()
+                            if not msg: continue
+                            response = self.process_message(msg)
+
+                        if self.should_optimize():
+                            moves = self.compute_optimal_positions()
+                            if moves:
+                                print("\n" + "*" * 60)
+                                print("  [OPTIM] Ejecutando reposicionamiento")
+                                print(f"  [OPTIM] Sim time: {self.grid.last_update_time:.2f}s")
+                                print(f"  [OPTIM] Estaciones a mover: {len(moves)}")
+                                print("*" * 60 + "\n")
+                                move_cmds = [{'gnb_index': m['gnb_index'],
+                                              'x': m['x'], 'y': m['y'], 'z': m['z'],
+                                              'speed': m['speed']} for m in moves]
+                                self.send_move_batch(move_cmds)
+                            else:
+                                print(f"[OPTIM] Sin movimientos necesarios "
+                                      f"(t={self.grid.last_update_time:.1f}s)")
+                                self._send_plain_response(response)
+                            self.last_optimization_sim_time = self.grid.last_update_time
+                        else:
+                            self._send_plain_response(response)
+
+    def _send_plain_response(self, response):
+        if response:
+            try:
+                self.conn.sendall(json.dumps(response).encode("utf-8"))
+            except Exception as e:
+                print(f"[Servidor] Error enviando respuesta: {e}")
+        else:
+            try:
+                self.conn.sendall(b"ACK")
+            except Exception:
+                pass
+
+    def close(self):
+        self.server_running = False
+        if self.conn:
+            try:
+                self.conn.sendall(b"SERVER_CLOSED")
+                self.conn.close()
+            except Exception:
+                pass
+
+    # ----------------------------------------------------------------- reporting
     def save_graphml(self):
         Path(RESULTS_DIR).mkdir(exist_ok=True)
         fp = Path(RESULTS_DIR) / f"digital_twin_{SESSION_TIMESTAMP}.graphml"
@@ -750,6 +870,7 @@ class DigitalTwin:
         return {
             'timestamp': datetime.now().isoformat(),
             'session': SESSION_TIMESTAMP,
+            'optimizer': OPTIMIZER_NAME,
             'simulation_time': {
                 'start': self.start_time,
                 'current': self.grid.last_update_time,
@@ -762,8 +883,7 @@ class DigitalTwin:
             'coverage': stats,
             'qos': qos,
             'coverage_holes': self.hole_detector.get_summary(),
-            'move_commands': self.move_commands_log  # ── NUEVO
-        }
+            'move_commands': self.move_commands_log}
 
     def print_summary(self):
         report = self.get_summary_report()
@@ -799,7 +919,9 @@ class DigitalTwin:
               f"{report['coverage']['total_cells']}")
         print(f"  Measured cells: {report['coverage']['measured_cells']} "
               f"({report['coverage']['measurement_percentage']:.1f}%)")
-        print(f"  Avg SINR (covered): {report['coverage']['avg_sinr_covered']:.2f} dB")
+        print(f"  Avg SINR (measured): {report['coverage']['avg_sinr_measured']:.2f} dB "
+              f"[min {report['coverage']['min_sinr_measured']:.2f} / "
+              f"max {report['coverage']['max_sinr_measured']:.2f}]")
         print("-"*60)
         print("QoS Distribution (measured cells):")
         for level, data in report['qos'].items():
@@ -811,7 +933,6 @@ class DigitalTwin:
         for gnb_id, data in report['coverage']['gnb_distribution'].items():
             print(f"  gNodeB macNodeId={gnb_id}: "
                   f"{data['percentage']:6.2f}% ({data['cells']} cells)")
-
         if self.move_commands_log:
             print("-"*60)
             print(f"MOVE Commands sent: {len(self.move_commands_log)}")
@@ -824,9 +945,7 @@ class DigitalTwin:
                       f"({cmd['x']:.1f}, {cmd['y']:.1f}, {cmd['z']:.1f}) "
                       f"@ {cmd.get('speed', '?')} m/s "
                       f"dist={dist:.0f}m ETA={eta:.1f}s "
-                      f"sim_t={entry['sim_time']:.2f}s "
-                      f"[{reason}]")
-
+                      f"sim_t={entry['sim_time']:.2f}s [{reason}]")
         self.hole_detector.print_summary()
 
     def save_report(self):
@@ -841,40 +960,32 @@ class DigitalTwin:
 
 
 # ===============================================================================
-#   PLOT PERIÓDICO: TOPOLOGÍA EN TIEMPO REAL
+#   PLOTS
 # ===============================================================================
 
 def plot_topology(dt):
     fig, ax = plt.subplots(figsize=(14, 12))
-    sim_t = f" — t={dt.grid.last_update_time:.1f}s" if dt.grid.last_update_time else ""
-
-    ax.set_title(f"Gemelo Digital 5G — Topologia{sim_t}",
-                 fontsize=14, fontweight='bold')
-
+    sim_t = f" - t={dt.grid.last_update_time:.1f}s" if dt.grid.last_update_time else ""
+    ax.set_title(f"Gemelo Digital 5G - Topologia{sim_t}", fontsize=14, fontweight='bold')
     G = dt.G
     QC = DigitalTwin.QOS_COLORS
 
-    # Fondo SINR suave
     sinr_disp = np.where(dt.grid.sinr_map == -999, np.nan, dt.grid.sinr_map)
     im = ax.imshow(sinr_disp, cmap='RdYlGn', origin='upper',
                    extent=[0, AREA_SIZE_X, AREA_SIZE_Y, 0],
                    vmin=-20, vmax=30, alpha=0.2, aspect='auto')
     plt.colorbar(im, ax=ax, label='SINR (dB)', shrink=0.8)
 
-    # Aristas
     for u, v, d in G.edges(data=True):
         xu, yu = G.nodes[u]['pos_x'], G.nodes[u]['pos_y']
         xv, yv = G.nodes[v]['pos_x'], G.nodes[v]['pos_y']
         lt = d.get('link_type', '')
         if lt == 'x2':
-            ax.plot([xu, xv], [yu, yv], color='#546E7A', ls='--',
-                    lw=1.5, alpha=0.4, zorder=2)
+            ax.plot([xu, xv], [yu, yv], color='#546E7A', ls='--', lw=1.5, alpha=0.4, zorder=2)
         elif lt == 'serving':
             qos_color = QC.get(d.get('qos', ''), '#999999')
-            ax.plot([xu, xv], [yu, yv], color=qos_color, ls='-',
-                    lw=2.0, alpha=0.7, zorder=3)
+            ax.plot([xu, xv], [yu, yv], color=qos_color, ls='-', lw=2.0, alpha=0.7, zorder=3)
 
-    # gNodeBs: cuadrado rojo grande
     for n in G:
         nd = G.nodes[n]
         if nd.get('node_type') != 'gnb': continue
@@ -883,15 +994,12 @@ def plot_topology(dt):
                    edgecolors='black', linewidth=2.0)
         ax.text(x, y, 'B', fontsize=11, ha='center', va='center',
                 color='white', fontweight='bold', zorder=11)
-        label = (f"gNB[{nd['gnb_index']}]\n"
-                 f"{nd['num_connected']} UEs\n"
-                 f"({x:.0f}, {y:.0f})")
+        label = f"gNB[{nd['gnb_index']}]\n{nd['num_connected']} UEs\n({x:.0f}, {y:.0f})"
         ax.annotate(label, (x, y), fontsize=7, ha='center', va='top',
                     xytext=(0, -24), textcoords='offset points', fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.3', fc='#FFCDD2',
-                              ec='#D32F2F', alpha=0.95), zorder=12)
+                    bbox=dict(boxstyle='round,pad=0.3', fc='#FFCDD2', ec='#D32F2F', alpha=0.95),
+                    zorder=12)
 
-    # UEs: círculo coloreado por QoS
     for n in G:
         nd = G.nodes[n]
         if nd.get('node_type') != 'ue': continue
@@ -901,15 +1009,13 @@ def plot_topology(dt):
                    edgecolors='black', linewidth=1.2)
         ax.text(x, y, 'U', fontsize=8, ha='center', va='center',
                 color='black', fontweight='bold', zorder=9)
-        label = (f"UE_{nd['ue_index']}\n"
-                 f"{nd['sinr']:.1f}dB ({nd['qos']})\n"
+        label = (f"UE_{nd['ue_index']}\n{nd['sinr']:.1f}dB ({nd['qos']})\n"
                  f"->gNB_{nd['master_id']}  HO:{nd['handovers']}")
         ax.annotate(label, (x, y), fontsize=6, ha='center', va='bottom',
                     xytext=(0, 16), textcoords='offset points',
-                    bbox=dict(boxstyle='round,pad=0.2', fc='white',
-                              ec=color, alpha=0.9, lw=1.5), zorder=10)
+                    bbox=dict(boxstyle='round,pad=0.2', fc='white', ec=color, alpha=0.9, lw=1.5),
+                    zorder=10)
 
-    # Leyenda — fuera del grid para no interferir con la representación
     legend = [
         Line2D([0], [0], marker='s', color='w', markerfacecolor='#D32F2F',
                markersize=14, markeredgecolor='black', label='gNodeB'),
@@ -927,7 +1033,6 @@ def plot_topology(dt):
         Line2D([0], [0], color='#D50000', lw=2, label='Serving (mala)'),
         Line2D([0], [0], color='#546E7A', lw=1.5, ls='--', label='X2'),
     ]
-
     ax.legend(handles=legend, bbox_to_anchor=(1.15, 1), loc='upper left',
               fontsize=8, framealpha=0.9, borderaxespad=0.)
 
@@ -938,22 +1043,16 @@ def plot_topology(dt):
     ax.grid(True, alpha=0.15, ls='--')
 
     st = dt.grid.get_coverage_statistics()
-
     ax.text(0.02, 0.02,
             f"Cobertura: {st['coverage_percentage']:.1f}%\n"
-            f"SINR medio: {st['avg_sinr_covered']:.1f} dB\n"
+            f"SINR medio (medido): {st['avg_sinr_measured']:.1f} dB\n"
             f"Medidas: {st['total_measurements']}",
             transform=ax.transAxes, fontsize=9, va='bottom',
             bbox=dict(boxstyle='round', fc='wheat', alpha=0.9))
-
     plt.tight_layout()
     plt.show(block=False)
     plt.pause(0.1)
 
-
-# ===============================================================================
-#   PLOTS FINALES (idénticos a server_TCP_routes.py)
-# ===============================================================================
 
 def plot_coverage_grid(coverage_grid, title="Coverage Map", save_path=None):
     fig, ax = plt.subplots(figsize=(12, 10))
@@ -975,10 +1074,9 @@ def plot_coverage_grid(coverage_grid, title="Coverage Map", save_path=None):
     stats = coverage_grid.get_coverage_statistics()
     textstr = (f"Cobertura: {stats['coverage_percentage']:.1f}%\n"
                f"Celdas cubiertas: {stats['covered_cells']}/{stats['total_cells']}\n"
-               f"SINR promedio: {stats['avg_sinr_covered']:.1f} dB")
-    props = dict(boxstyle='round', facecolor='wheat', alpha=0.9)
+               f"SINR promedio (medido): {stats['avg_sinr_measured']:.1f} dB")
     ax.text(0.02, 0.98, textstr, transform=ax.transAxes, fontsize=11,
-            verticalalignment='top', bbox=props)
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9))
     plt.tight_layout()
     if save_path:
         Path(PLOTS_DIR).mkdir(exist_ok=True)
@@ -990,8 +1088,7 @@ def plot_coverage_grid(coverage_grid, title="Coverage Map", save_path=None):
 
 def plot_sinr_heatmap(coverage_grid, title="SINR Heatmap", save_path=None):
     fig, ax = plt.subplots(figsize=(12, 10))
-    sinr_map_clean = np.where(coverage_grid.sinr_map == -999, np.nan,
-                              coverage_grid.sinr_map)
+    sinr_map_clean = np.where(coverage_grid.sinr_map == -999, np.nan, coverage_grid.sinr_map)
     im = ax.imshow(sinr_map_clean, cmap='RdYlGn', origin='upper',
                    extent=[0, AREA_SIZE_X, AREA_SIZE_Y, 0], vmin=-20, vmax=30)
     plt.colorbar(im, ax=ax, label='SINR (dB)')
@@ -1008,14 +1105,11 @@ def plot_sinr_heatmap(coverage_grid, title="SINR Heatmap", save_path=None):
     plt.pause(0.1)
 
 
-def plot_coverage_holes(coverage_grid, hole_detector, title="Coverage Holes",
-                        save_path=None):
+def plot_coverage_holes(coverage_grid, hole_detector, title="Coverage Holes", save_path=None):
     fig, ax = plt.subplots(figsize=(14, 11))
-    sinr_display = np.where(coverage_grid.sinr_map == -999, np.nan,
-                            coverage_grid.sinr_map)
+    sinr_display = np.where(coverage_grid.sinr_map == -999, np.nan, coverage_grid.sinr_map)
     im = ax.imshow(sinr_display, cmap='RdYlGn', origin='upper',
-                   extent=[0, coverage_grid.area_size_x,
-                           coverage_grid.area_size_y, 0],
+                   extent=[0, coverage_grid.area_size_x, coverage_grid.area_size_y, 0],
                    vmin=-20, vmax=30, alpha=0.6)
     plt.colorbar(im, ax=ax, label='SINR (dB)', shrink=0.8)
     severity_colors = {'critical': '#FF0000', 'severe': '#FF6600',
@@ -1024,23 +1118,19 @@ def plot_coverage_holes(coverage_grid, hole_detector, title="Coverage Holes",
         color = severity_colors.get(hole['severity'], '#888888')
         bb = hole['bounding_box']
         if hole['type'] == 'cluster':
-            rect = plt.Rectangle(
-                (bb['x_min'], bb['y_min']),
-                bb['x_max'] - bb['x_min'], bb['y_max'] - bb['y_min'],
-                linewidth=2, edgecolor=color, facecolor=color, alpha=0.25)
+            rect = plt.Rectangle((bb['x_min'], bb['y_min']),
+                                 bb['x_max'] - bb['x_min'], bb['y_max'] - bb['y_min'],
+                                 linewidth=2, edgecolor=color, facecolor=color, alpha=0.25)
             ax.add_patch(rect)
-            ax.plot(hole['center']['x'], hole['center']['y'],
-                    'x', color=color, markersize=10, markeredgewidth=2)
-            ax.annotate(
-                f"{hole['severity']}\n{hole['area_m2']:.0f}m2\n"
-                f"{hole['avg_sinr']:.1f}dB",
-                (hole['center']['x'], hole['center']['y']),
-                fontsize=7, ha='center', va='bottom',
-                color='white', fontweight='bold',
-                bbox=dict(boxstyle='round,pad=0.2', facecolor=color, alpha=0.8))
+            ax.plot(hole['center']['x'], hole['center']['y'], 'x', color=color,
+                    markersize=10, markeredgewidth=2)
+            ax.annotate(f"{hole['severity']}\n{hole['area_m2']:.0f}m2\n{hole['avg_sinr']:.1f}dB",
+                        (hole['center']['x'], hole['center']['y']), fontsize=7,
+                        ha='center', va='bottom', color='white', fontweight='bold',
+                        bbox=dict(boxstyle='round,pad=0.2', facecolor=color, alpha=0.8))
         else:
-            ax.plot(hole['center']['x'], hole['center']['y'],
-                    's', color=color, markersize=6, alpha=0.7)
+            ax.plot(hole['center']['x'], hole['center']['y'], 's', color=color,
+                    markersize=6, alpha=0.7)
     legend_elements = [
         Patch(facecolor='#FF0000', alpha=0.5, label='Critical (SINR < -10 dB)'),
         Patch(facecolor='#FF6600', alpha=0.5, label='Severe (-10 <= SINR < 0 dB)'),
@@ -1051,9 +1141,9 @@ def plot_coverage_holes(coverage_grid, hole_detector, title="Coverage Holes",
     textstr = (f"Coverage Holes: {summary['total_holes']}\n"
                f"Cells affected: {summary['total_cells_affected']}\n"
                f"Area affected: {summary['total_area_m2']:.0f} m2")
-    props = dict(boxstyle='round', facecolor='black', alpha=0.7)
     ax.text(0.02, 0.98, textstr, transform=ax.transAxes, fontsize=11,
-            verticalalignment='top', color='white', bbox=props)
+            verticalalignment='top', color='white',
+            bbox=dict(boxstyle='round', facecolor='black', alpha=0.7))
     ax.grid(True, alpha=0.2, linestyle='--')
     ax.set_xlabel('X (m)', fontsize=12)
     ax.set_ylabel('Y (m)', fontsize=12)
@@ -1068,207 +1158,12 @@ def plot_coverage_holes(coverage_grid, hole_detector, title="Coverage Holes",
 
 
 # ===============================================================================
-#   TCP HELPERS
+#   HILO DE ANALISIS
 # ===============================================================================
-
-def split_tcp_messages(raw_data):
-    messages = []
-    remaining = raw_data.strip()
-    while remaining:
-        remaining = remaining.strip()
-        if not remaining: break
-        if remaining.startswith('{'):
-            depth = 0
-            for i, ch in enumerate(remaining):
-                if ch == '{': depth += 1
-                elif ch == '}':
-                    depth -= 1
-                    if depth == 0:
-                        messages.append(remaining[:i+1])
-                        remaining = remaining[i+1:]
-                        break
-            else:
-                messages.append(remaining)
-                remaining = ""
-        else:
-            next_json = remaining.find('{')
-            if next_json > 0:
-                remaining = remaining[next_json:]
-            else:
-                break
-    return messages
-
-
-def process_message(dt, message):
-    try:
-        data = json.loads(message)
-        msg_type = data.get("type")
-        if msg_type == "POS":
-            dt.process_ue_message(message)
-            sinr = data.get("network", {}).get("sinr")
-            ue_id = data.get("ue_id", "?")
-            ue_index = data.get("ue_index", "?")
-            if sinr is not None:
-                print(f"[Servidor] UE[{ue_index}] (id={ue_id}) "
-                      f"SINR: {sinr:.2f} dB")
-            return {"status": "ok"}
-        elif msg_type == "COVERAGE":
-            dt.process_coverage_message(message)
-            return {"status": "ok"}
-        else:
-            print(f"[Servidor] Tipo desconocido: {msg_type}")
-            return {"status": "ignored"}
-    except json.JSONDecodeError as e:
-        print(f"[Servidor] JSON invalido: {e}")
-        return {"status": "error", "message": "Invalid JSON"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-
-# ===============================================================================
-#   SERVIDOR TCP (en thread secundario) — MODIFICADO CON TEST MOVE
-# ===============================================================================
-
-def tcp_server_thread(dt):
-    """
-    Servidor TCP con soporte bidireccional para comandos MOVE.
-
-    FLUJO CON OPTIMIZACIÓN AUTOMÁTICA:
-      1. Recibe POS/COVERAGE → procesa y actualiza el grafo
-      2. Comprueba si toca optimizar (cada OPTIMIZATION_INTERVAL s de sim)
-      3. Si toca: calcula centroides y envía MOVE_BATCH como respuesta
-      4. Si no: respuesta normal {"status":"ok"}
-    """
-    global conn, addr, server_running
-
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.settimeout(1.0)
-        s.bind((HOST, PORT))
-        s.listen(1)
-
-        print("="*60)
-        print(f"[Servidor] Escuchando en {HOST}:{PORT}")
-        print(f"[Servidor] Session: {SESSION_TIMESTAMP}")
-        print(f"[Servidor] Formato: JSON (POS + COVERAGE)")
-        print(f"[Servidor] Analisis en tiempo real: {ENABLE_REALTIME_ANALYSIS}")
-        print(f"[Servidor] Topologia en tiempo real: cada {TOPOLOGY_UPDATE_INTERVAL}s")
-        print(f"[Servidor] Deteccion de Coverage Holes: activada")
-        if ENABLE_TOPOLOGY_OPTIMIZATION:
-            print("-"*60)
-            print(f"[Servidor] >>> OPTIMIZACION TOPOLOGIA: ACTIVADA <<<")
-            print(f"[Servidor]   Intervalo: cada {OPTIMIZATION_INTERVAL}s de simulacion")
-            print(f"[Servidor]   Distancia minima: {OPTIMIZATION_MIN_DISTANCE}m")
-            print(f"[Servidor]   Velocidad dron: {OPTIMIZATION_SPEED} m/s")
-            print(f"[Servidor]   Min UEs para optimizar: {OPTIMIZATION_MIN_UES}")
-        else:
-            print(f"[Servidor] OPTIMIZACION TOPOLOGIA: desactivada")
-        print("="*60)
-
-        while server_running:
-            try:
-                conn, addr = s.accept()
-            except socket.timeout:
-                continue
-            except OSError:
-                break
-
-            print(f"[Servidor] Conexion desde {addr}")
-            with conn:
-                conn.settimeout(1.0)
-                while server_running:
-                    try:
-                        data = conn.recv(8192)
-                    except socket.timeout:
-                        continue
-                    except OSError:
-                        break
-                    if not data:
-                        print("[Servidor] Cliente desconectado")
-                        break
-
-                    raw = data.decode("utf-8", errors="replace").strip()
-                    messages = split_tcp_messages(raw)
-
-                    response = None
-                    for msg in messages:
-                        msg = msg.strip()
-                        if not msg: continue
-                        response = process_message(dt, msg)
-
-                    # ══════════════════════════════════════════════════
-                    #  DECISIÓN: ¿Respuesta normal o comando MOVE?
-                    #
-                    #  Si toca optimizar la topología, calculamos los
-                    #  centroides y enviamos un MOVE_BATCH como
-                    #  respuesta. Si no, respuesta normal.
-                    # ══════════════════════════════════════════════════
-
-                    should_send_optimization = dt.should_optimize()
-
-                    if should_send_optimization:
-                        moves = dt.compute_optimal_positions()
-
-                        if moves:
-                            print("\n" + "*" * 60)
-                            print("  [OPTIM] Ejecutando optimizacion de topologia")
-                            print(f"  [OPTIM] Sim time: {dt.grid.last_update_time:.2f}s")
-                            print(f"  [OPTIM] Estaciones a mover: {len(moves)}")
-                            print("*" * 60 + "\n")
-
-                            # Preparar lista limpia para MOVE_BATCH (sin campos extra)
-                            move_cmds = []
-                            for m in moves:
-                                move_cmds.append({
-                                    'gnb_index': m['gnb_index'],
-                                    'x': m['x'],
-                                    'y': m['y'],
-                                    'z': m['z'],
-                                    'speed': m['speed']
-                                })
-
-                            dt.send_move_batch(conn, move_cmds)
-                        else:
-                            print(f"[OPTIM] Sin movimientos necesarios "
-                                  f"(t={dt.grid.last_update_time:.1f}s)")
-                            # Enviar respuesta normal si no hay movimientos
-                            if response:
-                                try:
-                                    conn.sendall(json.dumps(response).encode("utf-8"))
-                                except Exception as e:
-                                    print(f"[Servidor] Error enviando respuesta: {e}")
-                            else:
-                                try:
-                                    conn.sendall(b"ACK")
-                                except:
-                                    break
-
-                        # Actualizar timestamp de última optimización
-                        dt.last_optimization_sim_time = dt.grid.last_update_time
-
-                    else:
-                        # ── Respuesta normal ──
-                        if response:
-                            try:
-                                conn.sendall(json.dumps(response).encode("utf-8"))
-                            except Exception as e:
-                                print(f"[Servidor] Error enviando respuesta: {e}")
-                        else:
-                            try:
-                                conn.sendall(b"ACK")
-                            except:
-                                break
-
-
-# ===============================================================================
-#   HILO DE ANÁLISIS (consola, sin matplotlib)
-# ===============================================================================
-
-last_analysis_time = 0
 
 def analysis_thread(dt):
-    global last_analysis_time, server_running
-    while server_running:
+    last_analysis_time = 0
+    while dt.server_running:
         time.sleep(1.0)
         now = time.time()
         if ENABLE_REALTIME_ANALYSIS and (now - last_analysis_time >= ANALYSIS_INTERVAL):
@@ -1279,106 +1174,73 @@ def analysis_thread(dt):
 
 
 # ===============================================================================
-#   MAIN — Matplotlib corre aquí (hilo principal)
+#   MAIN
 # ===============================================================================
 
 def main():
-    global server_running, digital_twin, final_report_requested
-
     Path(RESULTS_DIR).mkdir(exist_ok=True)
     Path(PLOTS_DIR).mkdir(exist_ok=True)
 
-    digital_twin = DigitalTwin()
+    dt = DigitalTwin()
 
-    # Arrancar servidor TCP en thread
-    tcp_thread = threading.Thread(target=tcp_server_thread, args=(digital_twin,),
-                                  daemon=True)
+    # Servidor TCP (metodo de la clase) en hilo secundario
+    tcp_thread = threading.Thread(target=dt.run_tcp_server, daemon=True)
     tcp_thread.start()
 
-    # Arrancar análisis en thread
-    an_thread = threading.Thread(target=analysis_thread, args=(digital_twin,),
-                                 daemon=True)
+    # Analisis en hilo secundario
+    an_thread = threading.Thread(target=analysis_thread, args=(dt,), daemon=True)
     an_thread.start()
 
-    # --- Handler de Ctrl+C ---
     def on_sigint(sig, frame):
-        global server_running, final_report_requested
         print("\n[Servidor] Cerrando servidor...")
-        server_running = False
-        final_report_requested = True
+        dt.server_running = False
 
     signal.signal(signal.SIGINT, on_sigint)
 
-    # --- Bucle principal: matplotlib aquí ---
     last_topology_time = 0
-
     print("[Main] Bucle principal activo. Ctrl+C para finalizar.\n")
 
-    while server_running:
+    while dt.server_running:
         try:
             now = time.time()
-
-            # Plot topología periódico
-            if ENABLE_REALTIME_TOPOLOGY and \
-               (now - last_topology_time >= TOPOLOGY_UPDATE_INTERVAL):
-                if digital_twin.grid.last_update_time is not None:
+            if ENABLE_REALTIME_TOPOLOGY and (now - last_topology_time >= TOPOLOGY_UPDATE_INTERVAL):
+                if dt.grid.last_update_time is not None:
                     try:
                         plt.close('all')
-                        plot_topology(digital_twin)
+                        plot_topology(dt)
                     except Exception as e:
                         print(f"[Plot] Error topologia: {e}")
                 last_topology_time = now
-
-            # Mantener matplotlib vivo
             try:
                 plt.pause(0.5)
-            except:
+            except Exception:
                 time.sleep(0.5)
-
         except KeyboardInterrupt:
-            server_running = False
-            final_report_requested = True
+            dt.server_running = False
             break
 
-    # === REPORTE FINAL (en hilo principal) ===
-    if ENABLE_FINAL_REPORT and digital_twin:
+    if ENABLE_FINAL_REPORT:
         print("\n" + "="*60)
         print("GENERANDO REPORTE FINAL")
         print("="*60)
-
-        digital_twin.detect_coverage_holes()
-        digital_twin.print_summary()
-        digital_twin.save_report()
-        digital_twin.save_graphml()
-
+        dt.detect_coverage_holes()
+        dt.print_summary()
+        dt.save_report()
+        dt.save_graphml()
         print("\n[Servidor] Generando visualizaciones...")
         plt.close('all')
-
-        plot_coverage_grid(digital_twin.grid,
-                           "Mapa de Cobertura Final",
+        plot_coverage_grid(dt.grid, "Mapa de Cobertura Final",
                            f"coverage_map_{SESSION_TIMESTAMP}.png")
-        plot_sinr_heatmap(digital_twin.grid,
-                          "Mapa SINR Final",
+        plot_sinr_heatmap(dt.grid, "Mapa SINR Final",
                           f"sinr_heatmap_{SESSION_TIMESTAMP}.png")
-        plot_coverage_holes(digital_twin.grid,
-                            digital_twin.hole_detector,
-                            "Coverage Holes Detectados",
+        plot_coverage_holes(dt.grid, dt.hole_detector, "Coverage Holes Detectados",
                             f"coverage_holes_{SESSION_TIMESTAMP}.png")
-
         print(f"\n[Servidor] Resultados en: {RESULTS_DIR} / {PLOTS_DIR}")
         print(f"[Servidor] Session: {SESSION_TIMESTAMP}")
-
         input("\nPresiona Enter para cerrar...")
         plt.close('all')
 
-    # Cerrar conexión TCP si queda abierta
-    if conn:
-        try:
-            conn.sendall(b"SERVER_CLOSED")
-            conn.close()
-        except:
-            pass
-
+    dt.close()
     sys.exit(0)
 
 
