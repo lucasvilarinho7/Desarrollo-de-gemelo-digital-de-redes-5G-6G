@@ -1,27 +1,16 @@
 # Ignorar archivos de caché
 cache/
 
-# Ignorar datos GADM
-Data/gadm41_ESP_shp/
-
-# Ignorar datos Distritos
-Data/Districts
-
-# Ignorar datos de barrios
-Data/Neighborhoods
-
 # Ignorar archivos de datos grandes
 *.csv
 *.json
-*.gpkg
+*.png
+*.pdf
+*.svg
 
 # Ignorar otros archivos temporales
 *.log
 .DS_Store
-
-Socket/coverage_plots
-
-Socket/coverage_results
 
 DT/coverage_plots
 
