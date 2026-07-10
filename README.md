@@ -60,6 +60,8 @@ socket TCP:
 │   ├── digital_twin_centroide.py            # Estrategia: centroide simple
 │   ├── digital_twin_centroide_ponderado.py  # Estrategia: centroide ponderado por SINR
 │   └── digital_twin_kmeans.py               # Estrategia: k-means 
+│   └── plot_coverage_holes_from_json.py     # Función para representar los huecos de cobertura a partir del JSON generado tras la simulación 
+│   └── requirements.txt                     # Requisitos del entorno 
 │
 └── .gitignore
 ```
@@ -69,7 +71,7 @@ socket TCP:
 ## Requisitos previos
 
 
-| [OMNeT++](https://omnetpp.org/) (serie 6.0.3) | Motor de simulación de eventos discretos |
+| [OMNeT++](https://omnetpp.org/) (6.0.3) | Motor de simulación de eventos discretos |
 | [INET Framework](https://inet.omnetpp.org/) | Modelos de red de base (movilidad, IP, aplicaciones) sobre los que se apoya Simu5G |
 | [Simu5G](https://simu5g.org/) | Modelado de la red 5G NR |
 | Se emplea  Python 3.10.12 | Ejecución del gemelo digital |
@@ -126,10 +128,7 @@ Las dependencias (ver `requirements.txt`) son:
 - `networkx` — construcción del grafo de topología (gNodeBs, UEs, enlaces)
 - `numpy` — malla de cobertura y cálculo estadístico del SINR
 - `matplotlib` — visualizaciones en tiempo real y mapas finales (backend `TkAgg`)
-- `scikit-learn` — DBSCAN para la detección de huecos de cobertura (con
-  fallback a un clustering propio si no está instalado) y KMeans para la
-  estrategia de reposicionamiento `digital_twin_kmeans.py` (sin fallback: es
-  obligatorio para ese script en concreto)
+- `scikit-learn` — DBSCAN para la detección de huecos de cobertura
 
 ---
 
